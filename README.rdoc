@@ -8,9 +8,9 @@ and msgpack with CBOR and cbor in the below, you will be on the right
 track.
 
 CBOR is an object representation format defined by the IETF[http://ietf.org].
-The specification[http://tools.ietf.org/html/draft-bormann-cbor]
+The specification[http://tools.ietf.org/html/rfc7049]
 has recently been approved as an IETF Standards-Track specification
-and will be an RFC in a couple of months, after the RFC editor has done their work.
+and has been published as RFC 7049.
 
 This is all based on wonderful work by frsyuki, and I have no idea how
 to acknowledge him appropriately.  This gem is not intended to fork or

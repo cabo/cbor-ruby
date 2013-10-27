@@ -3,7 +3,7 @@
 *.gem
 *.class
 .bundle
-Gemfile*
+Gemfile.lock
 pkg
 test/debug.log
 *~

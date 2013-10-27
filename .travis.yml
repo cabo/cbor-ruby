@@ -1,0 +1,13 @@
+language: ruby
+rvm:
+  - 1.9.3
+  - 2.0.0
+  - rbx-19mode
+  - ruby-head
+matrix:
+  allow_failures:
+    - rvm: rbx-19mode            # Rubinius issue #2742
+script: "bundle exec rake spec"
+
+notifications:
+  irc: "irc.freenode.org#coap"

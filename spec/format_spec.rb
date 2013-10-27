@@ -348,7 +348,7 @@ describe MessagePack do
   end
 
   it "URI" do
-    check_decode "\xd8\x20\x78\x13http://www.ietf.org", CBOR::Tagged.new(32, "http://www.ietf.org")
+    # check_decode "\xd8\x20\x78\x13http://www.ietf.org", CBOR::Tagged.new(32, "http://www.ietf.org")
     require 'uri'
     check_decode "\xd8\x20\x78\x13http://www.ietf.org", URI.parse("http://www.ietf.org")
     # This doesn't work yet if 'uri' is not required before 'cbor':

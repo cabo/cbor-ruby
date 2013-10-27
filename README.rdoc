@@ -28,9 +28,10 @@ Todos:
   CBOR::Tagged.  If you check out the source, you can +rake doc+ to
   get some documentation in the directory +doc+ (see +index.html+ there).
 
-* So far, this has been tested on MRI (1.9.3 and 2.0.0).  To do:
-  * Check this code out with Rubinius.
-  * Publish the pure-ruby version and make it work the same way on JRuby.
+* Cover more rubies.
+  * \[✔✔✔] tested on MRI (1.9.3, 2.0.0, 2.1.0-preview1).
+  * \[(✔)] tested on Rubinius 2.1.1.  Mostly works, but runs into a few Rubinius bugs.
+  * \[_] Publish the pure-ruby version and make it work the same way on JRuby.
 
 * Find and implement good ways to offer CBOR's indefinite length
   ("streaming") capability at the Ruby API level.

@@ -4,8 +4,16 @@ This is an initial Ruby implementation of the CBOR encoding, based on
 the (polished) high-performance msgpack-ruby code.
 
 Documentation will follow, but generally, if you replace MessagePack
-and msgpack with CBOR and cbor in the below, you will be on the right
-track.
+and msgpack with CBOR and cbor in the text cited from MessagePack
+below, you will be on the right track.  For a starter:
+
+    require 'cbor'
+    s = [1, 2, 33.5, 4].to_cbor  #=> "\x84\x01\x02\xF9P0\x04"
+    CBOR.decode(s)  #=> [1, 2, 33.5, 4]
+
+Use RubyGems to install:
+
+    gem install cbor
 
 CBOR is an object representation format defined by the IETF[http://ietf.org].
 The specification[http://tools.ietf.org/html/rfc7049]
@@ -25,12 +33,12 @@ Todos:
   percent slower than msgpack-ruby.
 
 * Properly document things, in particular the classes CBOR::Simple and
-  CBOR::Tagged.  If you check out the source, you can +rake doc+ to
+  CBOR::Tagged.  If you check out the source, you can +rake+ +doc+ to
   get some documentation in the directory +doc+ (see +index.html+ there).
 
 * Cover more rubies.
   * \[✔✔✔] tested on MRI (1.9.3, 2.0.0, 2.1.0-preview1).
-  * \[(✔)] tested on Rubinius 2.1.1.  Mostly works, but runs into a few Rubinius bugs.
+  * \[(✔)] tested on Rubinius 2.1.1.  Mostly works, but runs into a few Rubinius bugs, which have since been fixed on the Rubinius side.  Need to retest on the next release.
   * \[_] Publish the pure-ruby version and make it work the same way on JRuby.
 
 * Find and implement good ways to offer CBOR's indefinite length

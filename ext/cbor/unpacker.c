@@ -583,6 +583,8 @@ int msgpack_unpacker_read(msgpack_unpacker_t* uk, size_t target_stack_depth)
         /* PRIMITIVE_OBJECT_COMPLETE */
 
         if(msgpack_unpacker_stack_is_empty(uk)) {
+            if (r == PRIMITIVE_BREAK)
+              return PRIMITIVE_INVALID_BYTE;
             return PRIMITIVE_OBJECT_COMPLETE;
         }
 
@@ -627,6 +629,8 @@ int msgpack_unpacker_read(msgpack_unpacker_t* uk, size_t target_stack_depth)
                 object_complete_string(uk, top->object, top->count); /* use count as textflag */
                 goto done;
               }
+              if (!RB_TYPE_P(uk->last_object, T_STRING))
+                return PRIMITIVE_INVALID_BYTE;
 #ifdef COMPAT_HAVE_ENCODING     /* XXX */
               if (ENCODING_GET(top->object) != ENCODING_GET(uk->last_object))
                 return PRIMITIVE_INVALID_BYTE;

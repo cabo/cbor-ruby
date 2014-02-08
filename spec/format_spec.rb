@@ -342,6 +342,24 @@ describe MessagePack do
     end
   end
 
+  it "(_ not-a-string)" do
+    lambda {
+      check_decode "\x5f\x00\xff", "".b
+    }.should raise_error(MessagePack::MalformedFormatError)
+  end
+
+  it "bare break" do
+    lambda {
+      check_decode "\xff", "".b
+    }.should raise_error(MessagePack::MalformedFormatError)
+    lambda {
+      check_decode "\x82\xff\x00\x00", "".b
+    }.should raise_error(MessagePack::MalformedFormatError)
+    lambda {
+      check_decode "\x82\x9f\xff\xff", "".b
+    }.should raise_error(MessagePack::MalformedFormatError)
+  end
+
   it "Time" do
     check_decode "\xc1\x19\x12\x67", Time.at(4711)
     check 6, Time.at(Time.now.to_i)

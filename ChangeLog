@@ -1,3 +1,8 @@
+2014-02-09  Carsten Bormann  <cabo@tzi.org>
+
+	* 0.5.6.4: Add more checking for bare indefinite breaks and
+	non-strings inside indefinite strings.
+
 2013-08-17  Carsten Bormann  <cabo@tzi.org>
 
 	* First version of CBOR variant of this code.

@@ -454,7 +454,17 @@ static inline VALUE msgpack_buffer_read_top_as_string(msgpack_buffer_t* b, size_
 
     VALUE result;
     if (as_symbol) {
+#ifndef HAVE_RB_INTERN_STR
+      /* MRI 1.8 doesn't have rb_intern_str or rb_intern2, hack it... */
+      char *tmp = xmalloc(length+1);
+      memcpy(tmp, b->read_buffer, length);
+      tmp[length] = 0;
+      result = ID2SYM(rb_intern(tmp));
+      xfree(tmp);
+#else
       result = ID2SYM(rb_intern2(b->read_buffer, length));
+      /* FIXME: This is stuck at ASCII encoding */
+#endif
       /* todo: rb_check_id_cstr(const char *ptr, long len, rb_encoding *enc) */
     } else {
       result = rb_str_new(b->read_buffer, length);

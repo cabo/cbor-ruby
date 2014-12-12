@@ -1,9 +1,6 @@
-here = File.expand_path(File.dirname(__FILE__))
-require File.join(here, 'cbor', 'version')
+require "cbor/version"
 begin
-  m = /(\d+.\d+)/.match(RUBY_VERSION)
-  ver = m[1]
-  require File.join(here, 'cbor', ver, 'cbor')
+  require "cbor/#{RUBY_VERSION[/\d+.\d+/]}/cbor"
 rescue LoadError
-  require File.join(here, 'cbor', 'cbor')
+  require "cbor/cbor"
 end

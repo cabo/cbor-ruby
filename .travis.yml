@@ -2,11 +2,17 @@ language: ruby
 rvm:
   - 1.9.3
   - 2.0.0
-#  - rbx-19mode
+  - 2.1
+  - rbx-2
   - ruby-head
 matrix:
   allow_failures:
-    - rvm: rbx-19mode            # Rubinius issue #2742
+    - rvm: ruby-head
+    - rvm: rbx-2
+
+gemfile:
+  - Gemfile
+
 script: "bundle exec rake spec"
 
 notifications:

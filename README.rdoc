@@ -1,6 +1,6 @@
 = CBOR for Ruby
 
-This is an initial Ruby implementation of the CBOR encoding, based on
+This is a Ruby implementation of the CBOR[http://cbor.io] encoding, based on
 the (polished) high-performance msgpack-ruby code.
 
 Documentation will follow, but generally, if you replace MessagePack
@@ -37,12 +37,14 @@ Todos:
   get some documentation in the directory +doc+ (see +index.html+ there).
 
 * Cover more rubies.
-  * \[✔✔✔] tested on MRI (1.9.3, 2.0.0, 2.1.0-preview1).
-  * \[(✔)] tested on Rubinius 2.1.1.  Mostly works, but runs into a few Rubinius bugs, which have since been fixed on the Rubinius side.  Need to retest on the next release.
+  * \[✔✔✔] tested on MRI (1.9.3, 2.0.0, 2.1.0).
+  * (\[✔] There now also is some basic MRI 1.8.7 compatibility, however 1.8.7 does not support differentiation between byte and text strings.)
+  * \[(✔)] tested on Rubinius 2.4.1.
   * \[_] Publish the pure-ruby version and make it work the same way on JRuby.
 
 * Find and implement good ways to offer CBOR's indefinite length
-  ("streaming") capability at the Ruby API level.
+  ("streaming") capability at the Ruby API level.  (Decoding is fully
+  supported, just no streaming or indefinite length encoding.)
 
 * Rename some of the internals from msgpack to cbor.  Right now, much
   of the code still uses the name msgpack in its identifiers, to
@@ -53,7 +55,7 @@ Same Apache 2.0 License applies to the changes as to the original.
 For the changes:
 
 Author::    Carsten Bormann <cabo@tzi.org>
-Copyright:: Copyright (c) 2013 Carsten Bormann
+Copyright:: Copyright (c) 2013, 2014 Carsten Bormann
 License::   Apache License, Version 2.0
 
 {<img src="https://travis-ci.org/cabo/cbor-ruby.png?branch=master" />}[https://travis-ci.org/cabo/cbor-ruby] {<img src="https://badge.fury.io/rb/cbor.png" alt="Gem Version" />}[http://badge.fury.io/rb/cbor]

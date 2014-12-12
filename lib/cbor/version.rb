@@ -1,3 +1,3 @@
 module CBOR
-	VERSION = "0.5.6.4"
+	VERSION = "0.5.8.0"
 end

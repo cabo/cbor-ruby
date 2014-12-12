@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
   s.author = "Carsten Bormann, standing on the tall shoulders of Sadayuki Furuhashi"
   s.email = "cabo@tzi.org"
   s.license = "Apache 2.0"
-#  s.homepage = "http://msgpack.org/"
+  s.homepage = "http://cbor.io/"
 #  s.rubyforge_project = "msgpack"
   s.has_rdoc = false
   s.files = `git ls-files`.split("\n")

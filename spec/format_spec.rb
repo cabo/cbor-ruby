@@ -390,10 +390,22 @@ describe MessagePack do
   end
 
   it "Keys as Symbols" do       # Experimental!
-    CBOR.decode(CBOR.encode({a: 1}), :keys_as_symbols).should == {a: 1}
-    CBOR.decode(CBOR.encode({a: 1})).should == {"a" => 1}
+    CBOR.decode(CBOR.encode({:a => 1}), :keys_as_symbols).should == {:a => 1}
+    CBOR.decode(CBOR.encode({:a => 1})).should == {"a" => 1}
     expect { CBOR.decode("\x00", :foobar) }.to raise_error(ArgumentError)
   end
+
+  it 'CBOR.decode symbolize_keys' do
+    symbolized_hash = {:a => 'b', :c => 'd'}
+    CBOR.decode(CBOR.encode(symbolized_hash), :symbolize_keys => true).should == symbolized_hash
+  end
+
+  it 'Unpacker#read symbolize_keys' do
+    unpacker = Unpacker.new(:symbolize_keys => true)
+    symbolized_hash = {:a => 'b', :c => 'd'}
+    unpacker.feed(CBOR.encode(symbolized_hash)).read.should == symbolized_hash
+  end
+
 
 ## FIXME
 #  it "{0=>0, 1=>1, ..., 14=>14}" do

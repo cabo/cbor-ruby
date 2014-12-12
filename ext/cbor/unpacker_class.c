@@ -87,7 +87,7 @@ static VALUE Unpacker_initialize(int argc, VALUE* argv, VALUE self)
         io = argv[0];
         options = argv[1];
         if(rb_type(options) != T_HASH) {
-            rb_raise(rb_eArgError, "expected Hash but found %s.", rb_obj_classname(io));
+            rb_raise(rb_eArgError, "expected Hash but found %s.", rb_obj_classname(options));
         }
 
     } else {
@@ -97,6 +97,11 @@ static VALUE Unpacker_initialize(int argc, VALUE* argv, VALUE self)
     UNPACKER(self, uk);
     if(io != Qnil || options != Qnil) {
         MessagePack_Buffer_initialize(UNPACKER_BUFFER_(uk), io, options);
+        if (options != Qnil) {
+          VALUE v;
+          v = rb_hash_aref(options, ID2SYM(rb_intern("symbolize_keys")));
+          uk->keys_as_symbols = RTEST(v);
+        }
     }
 
     // TODO options
@@ -305,10 +310,16 @@ VALUE MessagePack_unpack(int argc, VALUE* argv)
     switch(argc) {
     case 2:
       options = argv[1];        /* Experimental! */
-      if (options == ID2SYM(rb_intern("keys_as_symbols")))
+      if (options == ID2SYM(rb_intern("keys_as_symbols"))) /* backward compat */
         keys_as_symbols = true;
-      else
-        rb_raise(rb_eArgError, "unknown option");
+      else if (options != Qnil) {
+        VALUE v;
+        if (!RB_TYPE_P(options, T_HASH)) {
+          rb_raise(rb_eArgError, "expected Hash but found %s.", rb_obj_classname(options));
+        }
+        v = rb_hash_aref(options, ID2SYM(rb_intern("symbolize_keys")));
+        keys_as_symbols = RTEST(v);
+      }
       /* fall through */
     case 1:
         src = argv[0];

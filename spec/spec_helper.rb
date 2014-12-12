@@ -1,3 +1,15 @@
+require 'rubygems'              # for 1.8
+
+RSpec.configure do |config|
+  config.expect_with :rspec do |c|
+    c.syntax = [:should, :expect]
+  end
+  config.mock_with :rspec do |c|
+    c.syntax = [:should, :expect]
+  end
+end
+
+
 class String
   if ''.respond_to? :encode
     def encode_as_utf8

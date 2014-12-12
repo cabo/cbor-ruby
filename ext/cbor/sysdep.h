@@ -121,6 +121,8 @@
 /* TODO default impl for _msgpack_bsp32 */
 #endif
 
+#ifndef HAVE_RB_INTEGER_PACK
+
 #if SIZEOF_BDIGITS == 2
 #define NTOHBDIGIT _msgpack_be16
 #elif SIZEOF_BDIGITS == 4
@@ -129,6 +131,8 @@
 #define NTOHBDIGIT _msgpack_be64
 #else
 #error this size of bignum digits SIZEOF_BDIGITS not implemented
+#endif
+
 #endif
 
 #endif

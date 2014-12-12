@@ -422,7 +422,7 @@ static int read_primitive(msgpack_unpacker_t* uk)
               union {
                 uint32_t u32;
                 float f;
-              } castbuf = { val };
+              } castbuf = { (uint32_t)val };
               return object_complete(uk, rb_float_new(castbuf.f));
             }
         case AI_8:  // double
@@ -476,6 +476,7 @@ int msgpack_unpacker_read_container_header(msgpack_unpacker_t* uk, uint64_t* res
         return PRIMITIVE_UNEXPECTED_TYPE; /* including INDEF! */
     }
 
+    reset_head_byte(uk);
     return 0;
 }
 
@@ -514,11 +515,19 @@ static VALUE msgpack_unpacker_process_tag(uint64_t tag, VALUE v) {
 #endif
     {
       char *sp = RSTRING_PTR(v);
-      int slen = RSTRING_LEN(v);
+      size_t slen = RSTRING_LEN(v);
       while (slen && *sp == 0) {
         slen--;
         sp++;
       }
+
+#ifdef HAVE_RB_INTEGER_PACK
+
+      res = rb_integer_unpack(sp, slen, 1, 0, INTEGER_PACK_BIG_ENDIAN);
+      /* (const void *words, size_t numwords, size_t wordsize, size_t nails, int flags); */
+
+#else
+
 #ifndef CANT_DO_BIGNUMS_FAST_ON_THIS_PLATFORM
       int ndig = (slen + SIZEOF_BDIGITS - 1)/SIZEOF_BDIGITS;
       res = rb_big_new(ndig, 1);
@@ -554,6 +563,7 @@ static VALUE msgpack_unpacker_process_tag(uint64_t tag, VALUE v) {
         res = rb_cstr2inum(hex, 16);
         xfree(hex);
       }
+#endif
 #endif
       if (tag == TAG_BIGNUM)    /* non-negative */
 #ifndef CANT_DO_BIGNUMS_FAST_ON_THIS_PLATFORM
@@ -626,7 +636,7 @@ int msgpack_unpacker_read(msgpack_unpacker_t* uk, size_t target_stack_depth)
               continue;
             case STACK_TYPE_STRING_INDEF:
               if (r == PRIMITIVE_BREAK) {
-                object_complete_string(uk, top->object, top->count); /* use count as textflag */
+                object_complete_string(uk, top->object, (int)top->count); /* use count as textflag */
                 goto done;
               }
               if (!RB_TYPE_P(uk->last_object, T_STRING))

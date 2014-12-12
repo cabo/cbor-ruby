@@ -52,6 +52,9 @@ else
   end
 end
 
+CLEAN.include('lib/cbor/*.jar')
+CLEAN.include('lib/cbor/cbor.*')
+
 task :default => :build
 
 

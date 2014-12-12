@@ -231,6 +231,17 @@ describe MessagePack do
     match obj, "\xA0"
   end
 
+  it "very simple bignums" do
+    CBOR.decode("\xc2\x40").should == 0
+    CBOR.decode("\xc2\x41\x00").should == 0
+    CBOR.decode("\xc2\x41a").should == 97
+    CBOR.decode("\xc2\x42aa").should == 24929
+    CBOR.decode("\xc3\x40").should == ~0
+    CBOR.decode("\xc3\x41\x00").should == ~0
+    CBOR.decode("\xc3\x41a").should == ~97
+    CBOR.decode("\xc3\x42aa").should == ~24929
+  end
+
   it "0x982173487123985791827359872948752345" do
     check_bn(0x982173487123985791827359872948752345, 0xc2)
     check_bn(-0x982173487123985791827359872948752345, 0xc3)

@@ -105,6 +105,9 @@
 #  endif
 #endif
 
+
+#ifndef HAVE_RB_INTEGER_PACK
+
 /* More MRI 1.8 */
 #ifndef RBIGNUM_LEN
   #define RBIGNUM_LEN(b)        (RBIGNUM(b)->len)
@@ -120,6 +123,8 @@
     #define CANT_DO_BIGNUMS_FAST_ON_THIS_PLATFORM
 /* gross 1.8.7 hack thanks to Mathieu Bouchard <matju@artengine.ca> */
 #define rb_big_new(len, sign) rb_funcall(INT2FIX(1),rb_intern("<<"),1,INT2FIX(len > 0 ? ((len) * SIZEOF_BDIGITS * 8) - 1 : 0));
+#endif
+
 #endif
 
 #ifndef RB_TYPE_P

@@ -80,7 +80,7 @@ static inline void cbor_encoder_write_head(msgpack_packer_t* pk, unsigned int ib
 {
     if (n < 24) {
         msgpack_buffer_ensure_writable(PACKER_BUFFER_(pk), 1);
-        msgpack_buffer_write_1(PACKER_BUFFER_(pk), ib + n);
+        msgpack_buffer_write_1(PACKER_BUFFER_(pk), ib + (int)n);
     } else if (n < 256) {
         msgpack_buffer_ensure_writable(PACKER_BUFFER_(pk), 3);
         msgpack_buffer_write_2(PACKER_BUFFER_(pk), ib + 24, n);
@@ -216,6 +216,10 @@ static inline void msgpack_packer_write_string_value(msgpack_packer_t* pk, VALUE
 
 static inline void msgpack_packer_write_symbol_value(msgpack_packer_t* pk, VALUE v)
 {
+#ifdef HAVE_RB_SYM2STR
+    /* rb_sym2str is added since MRI 2.2.0 */
+    msgpack_packer_write_string_value(pk, rb_sym2str(v));
+#else
     const char* name = rb_id2name(SYM2ID(v));
     /* actual return type of strlen is size_t */
     unsigned long len = strlen(name);
@@ -225,6 +229,7 @@ static inline void msgpack_packer_write_symbol_value(msgpack_packer_t* pk, VALUE
     }
     cbor_encoder_write_head(pk, IB_TEXT, len);
     msgpack_buffer_append(PACKER_BUFFER_(pk), name, len);
+#endif
 }
 
 static inline void msgpack_packer_write_fixnum_value(msgpack_packer_t* pk, VALUE v)
@@ -244,7 +249,26 @@ static inline void msgpack_packer_write_bignum_value(msgpack_packer_t* pk, VALUE
     v = rb_funcall(v, rb_intern("~"), 0);  /* should be rb_big_neg(), but that is static. */
     ib = IB_NEGATIVE;
   }
-  len = RBIGNUM_LEN(v);         /* This API is broken in Rubinius 2.1.1, #2742 */
+
+
+#ifdef HAVE_RB_INTEGER_PACK
+  len = rb_absint_size(v, NULL);
+
+  if (len > SIZEOF_LONG_LONG) {                  /* i.e., need real bignum */
+    msgpack_buffer_ensure_writable(PACKER_BUFFER_(pk), 1);
+    msgpack_buffer_write_1(PACKER_BUFFER_(pk), IB_BIGNUM + IB_NEGFLAG_AS_BIT(ib));
+    cbor_encoder_write_head(pk, IB_BYTES, len);
+    msgpack_buffer_ensure_writable(PACKER_BUFFER_(pk), len);
+
+    char buf[len];              /* XXX */
+    if (rb_integer_pack(v, buf, len, 1, 0, INTEGER_PACK_BIG_ENDIAN) != 1)
+      rb_raise(rb_eRangeError, "cbor rb_integer_pack() error");
+
+    msgpack_buffer_append(PACKER_BUFFER_(pk), buf, len);
+
+#else
+
+  len = RBIGNUM_LEN(v);
   if (len > SIZEOF_LONG_LONG/SIZEOF_BDIGITS) {
     msgpack_buffer_ensure_writable(PACKER_BUFFER_(pk), 1);
     msgpack_buffer_write_1(PACKER_BUFFER_(pk), IB_BIGNUM + IB_NEGFLAG_AS_BIT(ib));
@@ -296,6 +320,7 @@ static inline void msgpack_packer_write_bignum_value(msgpack_packer_t* pk, VALUE
     }
 #endif
     }
+#endif
   } else {
     cbor_encoder_write_head(pk, ib, rb_big2ull(v));
   }

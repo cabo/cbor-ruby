@@ -106,7 +106,7 @@
 #endif
 
 
-#ifndef HAVE_RB_INTEGER_PACK
+#ifndef HAVE_RB_INTEGER_UNPACK
 
 /* More MRI 1.8 */
 #ifndef RBIGNUM_LEN

@@ -521,7 +521,7 @@ static VALUE msgpack_unpacker_process_tag(uint64_t tag, VALUE v) {
         sp++;
       }
 
-#ifdef HAVE_RB_INTEGER_PACK
+#ifdef HAVE_RB_INTEGER_UNPACK
 
       res = rb_integer_unpack(sp, slen, 1, 0, INTEGER_PACK_BIG_ENDIAN);
       /* (const void *words, size_t numwords, size_t wordsize, size_t nails, int flags); */

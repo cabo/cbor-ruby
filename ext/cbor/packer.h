@@ -251,7 +251,7 @@ static inline void msgpack_packer_write_bignum_value(msgpack_packer_t* pk, VALUE
   }
 
 
-#ifdef HAVE_RB_INTEGER_PACK
+#ifdef HAVE_RB_INTEGER_UNPACK
   len = rb_absint_size(v, NULL);
 
   if (len > SIZEOF_LONG_LONG) {                  /* i.e., need real bignum */

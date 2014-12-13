@@ -121,7 +121,7 @@
 /* TODO default impl for _msgpack_bsp32 */
 #endif
 
-#ifndef HAVE_RB_INTEGER_PACK
+#ifndef HAVE_RB_INTEGER_UNPACK
 
 #if SIZEOF_BDIGITS == 2
 #define NTOHBDIGIT _msgpack_be16

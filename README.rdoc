@@ -17,7 +17,7 @@ Use RubyGems to install:
 
 CBOR is an object representation format defined by the IETF[http://ietf.org].
 The specification[http://tools.ietf.org/html/rfc7049]
-has recently been approved as an IETF Standards-Track specification
+is an IETF Standards-Track specification
 and has been published as RFC 7049.
 
 This is all based on wonderful work by frsyuki, and I have no idea how
@@ -37,9 +37,9 @@ Todos:
   get some documentation in the directory +doc+ (see +index.html+ there).
 
 * Cover more rubies.
-  * \[✔✔✔] tested on MRI (1.9.3, 2.0.0, 2.1.0).
+  * \[✔✔✔✔] tested on MRI (1.9.3, 2.0.0, 2.1.5, 2.2 head).
   * (\[✔] There now also is some basic MRI 1.8.7 compatibility, however 1.8.7 does not support differentiation between byte and text strings.)
-  * \[(✔)] tested on Rubinius 2.4.1.
+  * \[✔] tested on Rubinius 2.4.1.
   * \[_] Publish the pure-ruby version and make it work the same way on JRuby.
 
 * Find and implement good ways to offer CBOR's indefinite length

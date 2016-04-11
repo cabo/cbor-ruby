@@ -1,3 +1,7 @@
+2016-04-11  Carsten Bormann  <cabo@tzi.org>
+
+	* 0.5.9.1: Fix WIN32 problem inherited from upstream
+
 2014-12-13  Carsten Bormann  <cabo@tzi.org>
 
 	* 0.5.9.0: Upstream fixes; prepare for Ruby 2.2 (use GC-able

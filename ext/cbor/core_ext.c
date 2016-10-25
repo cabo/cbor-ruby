@@ -73,6 +73,20 @@ static VALUE FalseClass_to_msgpack(int argc, VALUE* argv, VALUE self)
     return packer;
 }
 
+#ifdef RUBY_INTEGER_UNIFICATION
+
+static VALUE Integer_to_msgpack(int argc, VALUE* argv, VALUE self)
+{
+  ENSURE_PACKER(argc, argv, packer, pk);
+  if (FIXNUM_P(self))
+    msgpack_packer_write_fixnum_value(pk, self);
+  else
+    msgpack_packer_write_bignum_value(pk, self);
+  return packer;
+}
+
+#else
+
 static VALUE Fixnum_to_msgpack(int argc, VALUE* argv, VALUE self)
 {
     ENSURE_PACKER(argc, argv, packer, pk);
@@ -86,6 +100,8 @@ static VALUE Bignum_to_msgpack(int argc, VALUE* argv, VALUE self)
     msgpack_packer_write_bignum_value(pk, self);
     return packer;
 }
+
+#endif
 
 static VALUE Float_to_msgpack(int argc, VALUE* argv, VALUE self)
 {
@@ -162,8 +178,12 @@ void MessagePack_core_ext_module_init()
     rb_define_method(rb_cNilClass,   "to_cbor", NilClass_to_msgpack, -1);
     rb_define_method(rb_cTrueClass,  "to_cbor", TrueClass_to_msgpack, -1);
     rb_define_method(rb_cFalseClass, "to_cbor", FalseClass_to_msgpack, -1);
+#ifdef RUBY_INTEGER_UNIFICATION
+    rb_define_method(rb_cInteger, "to_cbor", Integer_to_msgpack, -1);
+#else
     rb_define_method(rb_cFixnum, "to_cbor", Fixnum_to_msgpack, -1);
     rb_define_method(rb_cBignum, "to_cbor", Bignum_to_msgpack, -1);
+#endif
     rb_define_method(rb_cFloat,  "to_cbor", Float_to_msgpack, -1);
     rb_define_method(rb_cString, "to_cbor", String_to_msgpack, -1);
     rb_define_method(rb_cArray,  "to_cbor", Array_to_msgpack, -1);

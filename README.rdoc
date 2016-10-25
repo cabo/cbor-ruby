@@ -37,7 +37,7 @@ Todos:
   get some documentation in the directory +doc+ (see +index.html+ there).
 
 * Cover more rubies.
-  * \[✔✔✔✔] tested on MRI (1.9.3, 2.0.0, 2.1.5, 2.2 head).
+  * \[✔✔✔✔] tested on MRI (1.9.3, 2.0.0, 2.1.5, 2.2, 2.3.1, 2.4.0-preview2).
   * (\[✔] There now also is some basic MRI 1.8.7 compatibility, however 1.8.7 does not support differentiation between byte and text strings.)
   * \[✔] tested on Rubinius 2.4.1.
   * \[_] Publish the pure-ruby version and make it work the same way on JRuby.

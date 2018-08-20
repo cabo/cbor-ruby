@@ -171,7 +171,7 @@ static inline void msgpack_packer_write_double(msgpack_packer_t* pk, double v)
     castbuf.u32 = _msgpack_be_float(castbuf.u32);
     msgpack_buffer_write_byte_and_data(PACKER_BUFFER_(pk), IB_FLOAT4, castbuf.mem, 4);
   } else if (v != v) {          /* NaN */
-    cbor_encoder_write_head(pk, 0xe0, 0xfe00);
+    cbor_encoder_write_head(pk, 0xe0, 0x7e00);
   } else {
     msgpack_buffer_ensure_writable(PACKER_BUFFER_(pk), 9);
     union {

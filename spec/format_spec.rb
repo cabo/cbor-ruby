@@ -1,4 +1,4 @@
-# encoding: ascii-8bit
+# encoding: utf-8
 require 'spec_helper'
 
 def bignum_to_bytes(bn)
@@ -150,85 +150,89 @@ describe MessagePack do
   end
 
   it "nil" do
-    match nil, "\xf6"
+    match nil, "\xf6".b
   end
 
   it "false" do
-    match false, "\xf4"
+    match false, "\xf4".b
   end
 
   it "true" do
-    match true, "\xf5"
+    match true, "\xf5".b
   end
 
   it "0" do
-    match 0, "\x00"
+    match 0, "\x00".b
   end
 
   it "127" do
-    match 127, "\x18\x7f"
+    match 127, "\x18\x7f".b
   end
 
   it "128" do
-    match 128, "\x18\x80"
+    match 128, "\x18\x80".b
   end
 
   it "256" do
-    match 256, "\x19\x01\x00"
+    match 256, "\x19\x01\x00".b
   end
 
   it "-1" do
-    match -1, "\x20"
+    match -1, "\x20".b
   end
 
   it "-33" do
-    match -33, "\x38\x20"
+    match -33, "\x38\x20".b
   end
 
   it "-129" do
-    match -129, "\x38\x80"
+    match -129, "\x38\x80".b
   end
 
   it "-257" do
-    match -257, "\x39\x01\x00"
+    match -257, "\x39\x01\x00".b
   end
 
   it "{1=>1}" do
     obj = {1=>1}
-    match obj, "\xA1\x01\x01"
+    match obj, "\xA1\x01\x01".b
   end
 
   it "1.0" do
-    match 1.0, "\xF9\x3c\x00"
+    match 1.0, "\xF9\x3c\x00".b
+  end
+
+  it "NaN" do
+    match Float::NAN, "\xF9\x7e\x00".b
   end
 
   it "[]" do
-    match [], "\x80"
+    match [], "\x80".b
   end
 
   it "[0, 1, ..., 14]" do
     obj = (0..14).to_a
-    match obj, "\x8f\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e"
+    match obj, "\x8f\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e".b
   end
 
   it "[0, 1, ..., 15]" do
     obj = (0..15).to_a
-    match obj, "\x90\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\x0f"
+    match obj, "\x90\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\x0f".b
   end
 
   it "[0, 1, ..., 22]" do
     obj = (0..22).to_a
-    match obj, "\x97\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\x0f\x10\x11\x12\x13\x14\x15\x16"
+    match obj, "\x97\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\x0f\x10\x11\x12\x13\x14\x15\x16".b
   end
 
   it "[0, 1, ..., 23]" do
     obj = (0..23).to_a
-    match obj, "\x98\x18\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\x0f\x10\x11\x12\x13\x14\x15\x16\x17"
+    match obj, "\x98\x18\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\x0f\x10\x11\x12\x13\x14\x15\x16\x17".b
   end
 
   it "{}" do
     obj = {}
-    match obj, "\xA0"
+    match obj, "\xA0".b
   end
 
   it "very simple bignums" do
@@ -265,26 +269,26 @@ describe MessagePack do
   end
 
   it "fixnum/bignum switch" do
-    CBOR.encode(CBOR.decode("\xc2\x40")).should == "\x00"
-    CBOR.encode(CBOR.decode("\xc2\x41\x00")).should == "\x00"
-    CBOR.encode(CBOR.decode("\xc2\x41a")).should == "\x18a"
-    CBOR.encode(CBOR.decode("\xc2\x42aa")).should == "\x19aa"
-    CBOR.encode(CBOR.decode("\xc2\x43aaa")).should == "\x1A\x00aaa"
-    CBOR.encode(CBOR.decode("\xc2\x44aaaa")).should == "\x1Aaaaa"
-    CBOR.encode(CBOR.decode("\xc2\x45aaaaa")).should == "\e\x00\x00\x00aaaaa"
-    CBOR.encode(CBOR.decode("\xc2\x46aaaaaa")).should == "\e\x00\x00aaaaaa"
-    CBOR.encode(CBOR.decode("\xc2\x47aaaaaaa")).should == "\e\x00aaaaaaa"
-    CBOR.encode(CBOR.decode("\xc2\x48aaaaaaaa")).should == "\eaaaaaaaa"
-    CBOR.encode(CBOR.decode("\xc2\x49\x00aaaaaaaa")).should == "\eaaaaaaaa"
-    CBOR.encode(CBOR.decode("\xc2\x49aaaaaaaaa")).should == "\xC2Iaaaaaaaaa"
-    CBOR.encode(CBOR.decode("\xc2\x4a\x00aaaaaaaaa")).should == "\xC2Iaaaaaaaaa"
-    CBOR.encode(CBOR.decode("\xc2\x4aaaaaaaaaaa")).should == "\xC2Jaaaaaaaaaa"
-    CBOR.encode(CBOR.decode("\xc2\x4b\x00aaaaaaaaaa")).should == "\xC2Jaaaaaaaaaa"
-    CBOR.encode(CBOR.decode("\xc2\x4baaaaaaaaaaa")).should == "\xC2Kaaaaaaaaaaa"
-    CBOR.encode(CBOR.decode("\xc2\x4c\x00aaaaaaaaaaa")).should == "\xC2Kaaaaaaaaaaa"
-    CBOR.encode(CBOR.decode("\xc2\x4caaaaaaaaaaaa")).should == "\xC2Laaaaaaaaaaaa"
-    CBOR.encode(CBOR.decode("\xc2\x4d\x00aaaaaaaaaaaa")).should == "\xC2Laaaaaaaaaaaa"
-    CBOR.encode(CBOR.decode("\xc2\x4daaaaaaaaaaaaa")).should == "\xC2Maaaaaaaaaaaaa"
+    CBOR.encode(CBOR.decode("\xc2\x40")).should == "\x00".b
+    CBOR.encode(CBOR.decode("\xc2\x41\x00")).should == "\x00".b
+    CBOR.encode(CBOR.decode("\xc2\x41a")).should == "\x18a".b
+    CBOR.encode(CBOR.decode("\xc2\x42aa")).should == "\x19aa".b
+    CBOR.encode(CBOR.decode("\xc2\x43aaa")).should == "\x1A\x00aaa".b
+    CBOR.encode(CBOR.decode("\xc2\x44aaaa")).should == "\x1Aaaaa".b
+    CBOR.encode(CBOR.decode("\xc2\x45aaaaa")).should == "\e\x00\x00\x00aaaaa".b
+    CBOR.encode(CBOR.decode("\xc2\x46aaaaaa")).should == "\e\x00\x00aaaaaa".b
+    CBOR.encode(CBOR.decode("\xc2\x47aaaaaaa")).should == "\e\x00aaaaaaa".b
+    CBOR.encode(CBOR.decode("\xc2\x48aaaaaaaa")).should == "\eaaaaaaaa".b
+    CBOR.encode(CBOR.decode("\xc2\x49\x00aaaaaaaa")).should == "\eaaaaaaaa".b
+    CBOR.encode(CBOR.decode("\xc2\x49aaaaaaaaa")).should == "\xC2Iaaaaaaaaa".b
+    CBOR.encode(CBOR.decode("\xc2\x4a\x00aaaaaaaaa")).should == "\xC2Iaaaaaaaaa".b
+    CBOR.encode(CBOR.decode("\xc2\x4aaaaaaaaaaa")).should == "\xC2Jaaaaaaaaaa".b
+    CBOR.encode(CBOR.decode("\xc2\x4b\x00aaaaaaaaaa")).should == "\xC2Jaaaaaaaaaa".b
+    CBOR.encode(CBOR.decode("\xc2\x4baaaaaaaaaaa")).should == "\xC2Kaaaaaaaaaaa".b
+    CBOR.encode(CBOR.decode("\xc2\x4c\x00aaaaaaaaaaa")).should == "\xC2Kaaaaaaaaaaa".b
+    CBOR.encode(CBOR.decode("\xc2\x4caaaaaaaaaaaa")).should == "\xC2Laaaaaaaaaaaa".b
+    CBOR.encode(CBOR.decode("\xc2\x4d\x00aaaaaaaaaaaa")).should == "\xC2Laaaaaaaaaaaa".b
+    CBOR.encode(CBOR.decode("\xc2\x4daaaaaaaaaaaaa")).should == "\xC2Maaaaaaaaaaaaa".b
   end
 
   it "a-non-ascii" do

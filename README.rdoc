@@ -58,7 +58,7 @@ Author::    Carsten Bormann <cabo@tzi.org>
 Copyright:: Copyright (c) 2013, 2014 Carsten Bormann
 License::   Apache License, Version 2.0
 
-{<img src="https://travis-ci.org/cabo/cbor-ruby.png?branch=master" />}[https://travis-ci.org/cabo/cbor-ruby] {<img src="https://badge.fury.io/rb/cbor.png" alt="Gem Version" />}[http://badge.fury.io/rb/cbor]
+{<img src="https://travis-ci.org/cabo/cbor-ruby.svg?branch=master" />}[https://travis-ci.org/cabo/cbor-ruby] {<img src="https://badge.fury.io/rb/cbor.svg" alt="Gem Version" />}[http://badge.fury.io/rb/cbor]
 
 For the original, see below.
 

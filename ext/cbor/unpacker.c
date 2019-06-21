@@ -33,7 +33,7 @@
  * by limiting preallocation to about a Tebibyte
  * limit is 2**n-1 (n==10) so we can avoid a conditional
  */
-#define SANE_PREALLOCATION_MAX 0xFFFFFFFFFFUL
+#define SANE_PREALLOCATION_MAX 0xFFFFFFFUL
 #define SANE_PREALLOCATE(n) (n & SANE_PREALLOCATION_MAX)
 
 #if !defined(DISABLE_RMEM) && !defined(DISABLE_UNPACKER_STACK_RMEM) && \

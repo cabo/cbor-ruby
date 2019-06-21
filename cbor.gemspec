@@ -8,9 +8,9 @@ Gem::Specification.new do |s|
   s.description = %q{CBOR is a library for the CBOR binary object representation format, based on Sadayuki Furuhashi's MessagePack library.}
   s.author = "Carsten Bormann, standing on the tall shoulders of Sadayuki Furuhashi"
   s.email = "cabo@tzi.org"
-  s.license = "Apache 2.0"
+  s.license = "Apache-2.0"
   s.homepage = "http://cbor.io/"
-  s.has_rdoc = false
+#  s.has_rdoc = false
   s.files = `git ls-files`.split("\n")
   s.test_files = `git ls-files -- {test,spec}/*`.split("\n")
   s.require_paths = ["lib"]

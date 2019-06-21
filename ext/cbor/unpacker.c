@@ -29,6 +29,13 @@
 #include "rmem.h"
 #include <math.h>               /* for ldexp */
 
+/* work around https://bugs.ruby-lang.org/issues/15779 for now
+ * by limiting preallocation to about a Tebibyte
+ * limit is 2**n-1 (n==10) so we can avoid a conditional
+ */
+#define SANE_PREALLOCATION_MAX 0xFFFFFFFFFFUL
+#define SANE_PREALLOCATE(n) (n & SANE_PREALLOCATION_MAX)
+
 #if !defined(DISABLE_RMEM) && !defined(DISABLE_UNPACKER_STACK_RMEM) && \
         MSGPACK_UNPACKER_STACK_CAPACITY * MSGPACK_UNPACKER_STACK_SIZE <= MSGPACK_RMEM_PAGE_SIZE
 #define UNPACKER_STACK_RMEM
@@ -245,7 +252,7 @@ static int read_raw_body_cont(msgpack_unpacker_t* uk, int textflag)
     size_t length = uk->reading_raw_remaining;
 
     if(uk->reading_raw == Qnil) {
-        uk->reading_raw = rb_str_buf_new(length);
+        uk->reading_raw = rb_str_buf_new(SANE_PREALLOCATE(length));
     }
 
     do {
@@ -381,7 +388,7 @@ static int read_primitive(msgpack_unpacker_t* uk)
         if (val == 0) {
             return object_complete(uk, rb_ary_new());
         }
-        return _msgpack_unpacker_stack_push(uk, STACK_TYPE_ARRAY, val, rb_ary_new2(val));
+        return _msgpack_unpacker_stack_push(uk, STACK_TYPE_ARRAY, val, rb_ary_new2(SANE_PREALLOCATE(val)));
     CASE_AI(MT_MAP):
       READ_VAL(uk, ai, val);
     CASE_IMM(MT_MAP): // map

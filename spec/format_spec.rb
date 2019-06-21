@@ -421,7 +421,7 @@ describe MessagePack do
     unpacker.feed(CBOR.encode(symbolized_hash)).read.should == symbolized_hash
   end
 
-  it 'handle outrageous sizes' do
+  it 'handle outrageous sizes 1' do
     expect { CBOR.decode("\xa1") }.to raise_error(EOFError)
     expect { CBOR.decode("\xba\xff\xff\xff\xff") }.to raise_error(EOFError)
     expect { CBOR.decode("\xbb\xff\xff\xff\xff\xff\xff\xff\xff") }.to raise_error(EOFError)
@@ -429,18 +429,36 @@ describe MessagePack do
     expect { CBOR.decode("\xbb\x00\x00\x01\x01\x01\x01\x01\x01") }.to raise_error(EOFError)
     expect { CBOR.decode("\x81") }.to raise_error(EOFError)
     expect { CBOR.decode("\x9a\xff\xff\xff\xff") }.to raise_error(EOFError)
+  end
+  it 'handle outrageous sizes 2' do
     expect { CBOR.decode("\x9b\xff\xff\xff\xff\xff\xff\xff\xff") }.to raise_error(EOFError)
+  end
+  it 'handle outrageous sizes 3' do
     expect { CBOR.decode("\x9b\x01\x01\x01\x01\x01\x01\x01\x01") }.to raise_error(EOFError)
+  end
+  it 'handle outrageous sizes 4' do
     expect { CBOR.decode("\x9b\x00\x00\x01\x01\x01\x01\x01\x01") }.to raise_error(EOFError)
     expect { CBOR.decode("\x61") }.to raise_error(EOFError)
     expect { CBOR.decode("\x7a\xff\xff\xff\xff") }.to raise_error(EOFError)
+  end
+  it 'handle outrageous sizes 5' do
     expect { CBOR.decode("\x7b\xff\xff\xff\xff\xff\xff\xff\xff") }.to raise_error(EOFError)
+  end
+  it 'handle outrageous sizes 6' do
     expect { CBOR.decode("\x7b\x01\x01\x01\x01\x01\x01\x01\x01") }.to raise_error(EOFError)
+  end
+  it 'handle outrageous sizes 7' do
     expect { CBOR.decode("\x7b\x00\x00\x01\x01\x01\x01\x01\x01") }.to raise_error(EOFError)
     expect { CBOR.decode("\x41") }.to raise_error(EOFError)
     expect { CBOR.decode("\x5a\xff\xff\xff\xff") }.to raise_error(EOFError)
+  end
+  it 'handle outrageous sizes 8' do
     expect { CBOR.decode("\x5b\xff\xff\xff\xff\xff\xff\xff\xff") }.to raise_error(EOFError)
+  end
+  it 'handle outrageous sizes 9' do
     expect { CBOR.decode("\x5b\x01\x01\x01\x01\x01\x01\x01\x01") }.to raise_error(EOFError)
+  end
+  it 'handle outrageous sizes 10' do
     expect { CBOR.decode("\x5b\x00\x00\x01\x01\x01\x01\x01\x01") }.to raise_error(EOFError)
   end
 

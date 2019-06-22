@@ -348,7 +348,7 @@ void msgpack_packer_write_value(msgpack_packer_t* pk, VALUE v);
 
 static inline void msgpack_packer_write_tagged_value(msgpack_packer_t* pk, VALUE v)
 {
-  cbor_encoder_write_head(pk, IB_TAG, FIX2LONG(rb_struct_aref(v, INT2FIX(0))));
+  cbor_encoder_write_head(pk, IB_TAG, rb_num2ulong(rb_struct_aref(v, INT2FIX(0))));
   msgpack_packer_write_value(pk, rb_struct_aref(v, INT2FIX(1)));
 }
 

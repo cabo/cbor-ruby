@@ -375,6 +375,15 @@ describe MessagePack do
     }.should raise_error(MessagePack::MalformedFormatError)
   end
 
+  it "Tagged" do
+    expect { check 10, CBOR::Tagged.new("foo", 2) }.to raise_error(TypeError)
+    check 2, CBOR::Tagged.new(10, 2)
+    check 4, CBOR::Tagged.new(0xBEEF, 2)
+    check 6, CBOR::Tagged.new(0xDEADBEEF, 2)
+    check 10, CBOR::Tagged.new(0xDEADBEEFDEADBEEF, 2)
+    expect { check 10, CBOR::Tagged.new(0x1DEADBEEFDEADBEEF, 2) }.to raise_error(RangeError)
+  end
+
   it "Time" do
     check_decode "\xc1\x19\x12\x67", Time.at(4711)
     check 6, Time.at(Time.now.to_i)

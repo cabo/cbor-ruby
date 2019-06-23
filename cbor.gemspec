@@ -16,7 +16,7 @@ Gem::Specification.new do |s|
   s.require_paths = ["lib"]
   s.extensions = ["ext/cbor/extconf.rb"]
 
-  s.add_development_dependency 'bundler', RUBY_VERSION.to_f < 2.3 ? ['~> 1.0'] : ['~> 2.0']
+  s.add_development_dependency 'bundler'
   s.add_development_dependency 'rake', ['~> 0.9.2']
   s.add_development_dependency 'rake-compiler', ['~> 0.8.3']
   s.add_development_dependency 'rspec', ['~> 2.11']

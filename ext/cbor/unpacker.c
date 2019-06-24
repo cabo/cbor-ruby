@@ -31,7 +31,7 @@
 
 /* work around https://bugs.ruby-lang.org/issues/15779 for now
  * by limiting preallocation to about a Tebibyte
- * limit is 2**n-1 (n==10) so we can avoid a conditional
+ * limit is 2**n-1 (n==28) so we can avoid a conditional
  */
 #define SANE_PREALLOCATION_MAX 0xFFFFFFFUL
 #define SANE_PREALLOCATE(n) (n & SANE_PREALLOCATION_MAX)

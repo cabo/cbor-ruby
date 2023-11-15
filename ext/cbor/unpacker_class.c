@@ -261,9 +261,10 @@ static VALUE Unpacker_each_impl(VALUE self)
     }
 }
 
-static VALUE Unpacker_rescue_EOFError(VALUE self)
+static VALUE Unpacker_rescue_EOFError(VALUE self, VALUE error)
 {
     UNUSED(self);
+    UNUSED(error);
     return Qnil;
 }
 

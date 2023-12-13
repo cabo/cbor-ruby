@@ -52,7 +52,7 @@ static void Packer_free(msgpack_packer_t* pk)
         return;
     }
     msgpack_packer_destroy(pk);
-    free(pk);
+    xfree(pk);
 }
 
 static VALUE Packer_alloc(VALUE klass)

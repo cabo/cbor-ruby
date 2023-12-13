@@ -52,7 +52,7 @@ static void Unpacker_free(msgpack_unpacker_t* uk)
         return;
     }
     msgpack_unpacker_destroy(uk);
-    free(uk);
+    xfree(uk);
 }
 
 static VALUE Unpacker_alloc(VALUE klass)

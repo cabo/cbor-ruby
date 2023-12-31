@@ -16,9 +16,9 @@ Use RubyGems to install:
     gem install cbor
 
 CBOR is an object representation format defined by the IETF[http://ietf.org].
-The specification[http://tools.ietf.org/html/rfc7049]
+The specification[http://tools.ietf.org/html/rfc8949]
 is an IETF Standards-Track specification
-and has been published as RFC 7049.
+and has been published as RFC 8949 (superseding the older RFC 7049).
 
 This is all based on wonderful work by frsyuki, and I have no idea how
 to acknowledge him appropriately.  This gem is not intended to fork or

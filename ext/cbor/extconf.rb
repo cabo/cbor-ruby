@@ -9,7 +9,7 @@ have_func("rb_sym2str", ["ruby.h"])
 have_func("rb_str_intern", ["ruby.h"])
 have_func("rb_integer_unpack", ["ruby.h"])
 
-$CFLAGS << %[ -I.. -Wall -O3 -g -std=c99]
+append_cflags(%w[-I.. -Wall -O3 -g -std=c99])
 #$CFLAGS << %[ -DDISABLE_RMEM]
 #$CFLAGS << %[ -DDISABLE_RMEM_REUSE_INTERNAL_FRAGMENT]
 #$CFLAGS << %[ -DDISABLE_BUFFER_READ_REFERENCE_OPTIMIZE]
@@ -17,9 +17,9 @@ $CFLAGS << %[ -I.. -Wall -O3 -g -std=c99]
 
 if defined?(RUBY_ENGINE) && RUBY_ENGINE == 'rbx'
   # msgpack-ruby doesn't modify data came from RSTRING_PTR(str)
-  $CFLAGS << %[ -DRSTRING_NOT_MODIFIED]
+  append_cflags('-DRSTRING_NOT_MODIFIED')
   # Rubinius C extensions don't grab GVL while rmem is not thread safe
-  $CFLAGS << %[ -DDISABLE_RMEM]
+  append_cflags('-DDISABLE_RMEM')
 end
 
 if warnflags = CONFIG['warnflags']

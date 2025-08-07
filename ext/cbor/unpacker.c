@@ -417,11 +417,21 @@ static int read_primitive(msgpack_unpacker_t* uk)
       switch (ai) {
         case AI_2: {  // half
           int exp = (val >> 10) & 0x1f;
-          int mant = val & 0x3ff;
+          int mant = val & 0x3ff; /* 10 bits */
           double res;
           if (exp == 0) res = ldexp(mant, -24);
           else if (exp != 31) res = ldexp11(mant + 1024, exp - 25);
-          else res = mant == 0 ? INFINITY : NAN;
+          else {
+            if (mant == 0)
+              res = INFINITY;
+            else { /* NAN */
+              union {
+                uint64_t u64;
+                double d;
+              } castbuf = { (val & 0x8000) << 48 | 0x7ff0000000000000UL | (uint64_t)mant << 42 };
+              return object_complete(uk, rb_float_new(castbuf.d));
+            }
+          }
           return object_complete(uk, rb_float_new(val & 0x8000 ? -res : res));
         }
         case AI_4:  // float
@@ -429,8 +439,17 @@ static int read_primitive(msgpack_unpacker_t* uk)
               union {
                 uint32_t u32;
                 float f;
-              } castbuf = { (uint32_t)val };
-              return object_complete(uk, rb_float_new(castbuf.f));
+              } castbuf = { (uint32_t)val }; /* sets Q to 1 for NAN */
+              if (castbuf.f == castbuf.f) {
+                return object_complete(uk, rb_float_new(castbuf.f));
+              } else { /* NAN */
+                uint64_t mant = val & 0x7fffff; /* 23 bits */
+                union {
+                  uint64_t u64;
+                  double d;
+                } castbuf1 = { (val & 0x80000000UL) << 32 | 0x7ff0000000000000UL | mant << 29 };
+                return object_complete(uk, rb_float_new(castbuf1.d));
+              }
             }
         case AI_8:  // double
             {

@@ -170,17 +170,25 @@ static inline void msgpack_packer_write_double(msgpack_packer_t* pk, double v)
     msgpack_buffer_ensure_writable(PACKER_BUFFER_(pk), 5);
     castbuf.u32 = _msgpack_be_float(castbuf.u32);
     msgpack_buffer_write_byte_and_data(PACKER_BUFFER_(pk), IB_FLOAT4, castbuf.mem, 4);
-  } else if (v != v) {          /* NaN */
-    cbor_encoder_write_head(pk, 0xe0, 0x7e00);
   } else {
-    msgpack_buffer_ensure_writable(PACKER_BUFFER_(pk), 9);
     union {
         double d;
         uint64_t u64;
         char mem[8];
     } castbuf = { v };
-    castbuf.u64 = _msgpack_be_double(castbuf.u64);
-    msgpack_buffer_write_byte_and_data(PACKER_BUFFER_(pk), IB_FLOAT8, castbuf.mem, 8);
+    if (v != v && (castbuf.u64 & 0x1fffffffUL) == 0) { /* NaN && can narrow */
+      uint64_t sign = castbuf.u64 >> 63;
+      uint64_t mant = castbuf.u64 & 0xfffffffffffff; /* 52 bits */
+      if ((mant & 0x3ffffffffffUL) == 0) { /* 42 zero bits: narrow to f16 */
+        cbor_encoder_write_head(pk, 0xe0, sign << 15 | 0x7c00 | mant >> 42);
+      } else {                  /* 29 zero bits (checked above): narrow to f32 */
+        cbor_encoder_write_head(pk, 0xe0, sign << 31 | 0x7f800000 | mant >> 29);
+      }
+    } else {                    /* can't narrow */
+      msgpack_buffer_ensure_writable(PACKER_BUFFER_(pk), 9);
+      castbuf.u64 = _msgpack_be_double(castbuf.u64);
+      msgpack_buffer_write_byte_and_data(PACKER_BUFFER_(pk), IB_FLOAT8, castbuf.mem, 8);
+    }
   }
 }
 

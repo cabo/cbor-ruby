@@ -683,6 +683,7 @@ int msgpack_unpacker_read(msgpack_unpacker_t* uk, size_t target_stack_depth)
                 if(msgpack_unpacker_stack_pop(uk) <= target_stack_depth) {
                     return PRIMITIVE_OBJECT_COMPLETE;
                 }
+                r = PRIMITIVE_OBJECT_COMPLETE;
                 goto container_completed;
             }
         }

@@ -334,6 +334,66 @@ describe MessagePack do
     }.should raise_error(MessagePack::MalformedFormatError)
   end
 
+  # Regression tests for https://github.com/cabo/cbor-ruby/issues/20
+  # Nested indefinite-length containers should decode correctly.
+
+  it "{_ 'a' => [_ 1]}" do
+    # indefinite map containing an indefinite array
+    check_decode "\xbf\x61a\x9f\x01\xff\xff", {"a" => [1]}
+  end
+
+  it "{_ 'a' => [_ 1], 'b' => [2, 3]}" do
+    # indefinite map containing an indefinite and a definite array
+    check_decode "\xbf\x61a\x9f\x01\xff\x61b\x82\x02\x03\xff", {"a" => [1], "b" => [2, 3]}
+  end
+
+  it "{_ 'a' => {_ 'b' => 1}}" do
+    # indefinite map containing an indefinite map
+    check_decode "\xbf\x61a\xbf\x61b\x01\xff\xff", {"a" => {"b" => 1}}
+  end
+
+  it "{_ 'a' => {_ }}" do
+    # indefinite map containing an empty indefinite map
+    check_decode "\xbf\x61a\xbf\xff\xff", {"a" => {}}
+  end
+
+  it "{_ 'a' => {_ NO BREAK}" do
+    # indefinite map containing an empty indefinite map
+    lambda {
+      check_decode "\xbf\x61a\xbf\xff", {"a" => {}}
+    }.should raise_error(EOFError)
+  end
+
+  it "{_ 'a' => {} NO BREAK" do
+    # indefinite map containing an empty indefinite map
+    lambda {
+      check_decode "\xbf\x61a\xa0", {"a" => {}}
+    }.should raise_error(EOFError)
+  end
+
+  it "{_ 'a' => {_ 'b' => 1}, 'b' => {'c' => 2}}" do
+    # indefinite map containing an indefinite and a definite map
+    check_decode "\xbf\x61a\xbf\x61b\x01\xff\x61b\xa1\x61c\x02\xff", {"a" => {"b" => 1}, "b" => {"c" => 2}}
+  end
+
+  it "[_ {_ 'a' => 1}]" do
+    # indefinite array containing an indefinite map
+    check_decode "\x9f\xbf\x61a\x01\xff\xff", [{"a" => 1}]
+  end
+
+  it "{_ 'files' => [{_ 'name' => 'foo'}]}" do
+    # indefinite map containing a definite array of indefinite maps
+    # (the exact pattern produced by Jackson's CBOR serializer)
+    check_decode "\xbf\x65files\x81\xbf\x64name\x63foo\xff\xff",
+                 {"files" => [{"name" => "foo"}]}
+  end
+
+  it "deeply nested indefinite containers" do
+    # {_ "a" => {_ "b" => [_ {_ "c" => 1}]}}
+    check_decode "\xbf\x61a\xbf\x61b\x9f\xbf\x61c\x01\xff\xff\xff\xff",
+                 {"a" => {"b" => [{"c" => 1}]}}
+  end
+
   it "(_ a b)" do
     check_decode "\x7f\xff", "".encode_as_utf8
     check_decode "\x5f\xff", "".b

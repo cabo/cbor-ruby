@@ -342,9 +342,38 @@ describe MessagePack do
     check_decode "\xbf\x61a\x9f\x01\xff\xff", {"a" => [1]}
   end
 
+  it "{_ 'a' => [_ 1], 'b' => [2, 3]}" do
+    # indefinite map containing an indefinite and a definite array
+    check_decode "\xbf\x61a\x9f\x01\xff\x61b\x82\x02\x03\xff", {"a" => [1], "b" => [2, 3]}
+  end
+
   it "{_ 'a' => {_ 'b' => 1}}" do
     # indefinite map containing an indefinite map
     check_decode "\xbf\x61a\xbf\x61b\x01\xff\xff", {"a" => {"b" => 1}}
+  end
+
+  it "{_ 'a' => {_ }}" do
+    # indefinite map containing an empty indefinite map
+    check_decode "\xbf\x61a\xbf\xff\xff", {"a" => {}}
+  end
+
+  it "{_ 'a' => {_ NO BREAK}" do
+    # indefinite map containing an empty indefinite map
+    lambda {
+      check_decode "\xbf\x61a\xbf\xff", {"a" => {}}
+    }.should raise_error(EOFError)
+  end
+
+  it "{_ 'a' => {} NO BREAK" do
+    # indefinite map containing an empty indefinite map
+    lambda {
+      check_decode "\xbf\x61a\xa0", {"a" => {}}
+    }.should raise_error(EOFError)
+  end
+
+  it "{_ 'a' => {_ 'b' => 1}, 'b' => {'c' => 2}}" do
+    # indefinite map containing an indefinite and a definite map
+    check_decode "\xbf\x61a\xbf\x61b\x01\xff\x61b\xa1\x61c\x02\xff", {"a" => {"b" => 1}, "b" => {"c" => 2}}
   end
 
   it "[_ {_ 'a' => 1}]" do

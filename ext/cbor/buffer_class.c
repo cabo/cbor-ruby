@@ -73,8 +73,6 @@ static ID get_partial_read_method(VALUE io)
 {
     if(rb_respond_to(io, s_readpartial)) {
         return s_readpartial;
-    } else if(rb_respond_to(io, s_read)) {
-        return s_read;
     } else {
         return s_read;
     }

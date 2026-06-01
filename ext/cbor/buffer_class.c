@@ -38,9 +38,10 @@ static ID s_write;
 static ID s_append;
 static ID s_close;
 
+static msgpack_buffer_t* Buffer_get(VALUE self);
+
 #define BUFFER(from, name) \
-    msgpack_buffer_t *name = NULL; \
-    Data_Get_Struct(from, msgpack_buffer_t, name); \
+    msgpack_buffer_t *name = Buffer_get(from); \
     if(name == NULL) { \
         rb_raise(rb_eArgError, "NULL found for " # name " when shouldn't be."); \
     }
@@ -51,20 +52,61 @@ static ID s_close;
         rb_raise(rb_eTypeError, "instance of String needed"); \
     }
 
+static void Buffer_mark(void* data)
+{
+    msgpack_buffer_t* b = data;
+    msgpack_buffer_mark(b);
+}
+
 static void Buffer_free(void* data)
 {
     if(data == NULL) {
         return;
     }
-    msgpack_buffer_t* b = (msgpack_buffer_t*) data;
+    msgpack_buffer_t* b = data;
     msgpack_buffer_destroy(b);
-    xfree(b);
+    xfree(data);
+}
+
+#ifdef TypedData_Make_Struct
+static size_t Buffer_memsize(const void* data)
+{
+    return data == NULL ? 0 : sizeof(msgpack_buffer_t);
+}
+
+static const rb_data_type_t buffer_data_type = {
+    "CBOR::Buffer",
+    {Buffer_mark, Buffer_free, Buffer_memsize,},
+    NULL, NULL, 0
+};
+
+static const rb_data_type_t wrapped_buffer_data_type = {
+    "CBOR::WrappedBuffer",
+    {Buffer_mark, NULL, Buffer_memsize,},
+    &buffer_data_type, NULL, 0
+};
+#endif
+
+static msgpack_buffer_t* Buffer_get(VALUE self)
+{
+    msgpack_buffer_t* b = NULL;
+#ifdef TypedData_Make_Struct
+    TypedData_Get_Struct(self, msgpack_buffer_t, &buffer_data_type, b);
+#else
+    Data_Get_Struct(self, msgpack_buffer_t, b);
+#endif
+    return b;
 }
 
 static VALUE Buffer_alloc(VALUE klass)
 {
     msgpack_buffer_t* b;
-    VALUE self = Data_Make_Struct(klass, msgpack_buffer_t, msgpack_buffer_mark, Buffer_free, b);
+    VALUE self;
+#ifdef TypedData_Make_Struct
+    self = TypedData_Make_Struct(klass, msgpack_buffer_t, &buffer_data_type, b);
+#else
+    self = Data_Make_Struct(klass, msgpack_buffer_t, Buffer_mark, Buffer_free, b);
+#endif
     msgpack_buffer_init(b);
 
     return self;
@@ -119,7 +161,11 @@ void MessagePack_Buffer_initialize(msgpack_buffer_t* b, VALUE io, VALUE options)
 VALUE MessagePack_Buffer_wrap(msgpack_buffer_t* b, VALUE owner)
 {
     b->owner = owner;
-    return Data_Wrap_Struct(cMessagePack_Buffer, msgpack_buffer_mark, NULL, b);
+#ifdef TypedData_Make_Struct
+    return TypedData_Wrap_Struct(cMessagePack_Buffer, &wrapped_buffer_data_type, b);
+#else
+    return Data_Wrap_Struct(cMessagePack_Buffer, Buffer_mark, NULL, b);
+#endif
 }
 
 static VALUE Buffer_initialize(int argc, VALUE* argv, VALUE self)
@@ -513,4 +559,3 @@ void MessagePack_Buffer_module_init(VALUE mMessagePack)
     rb_define_alias(cMessagePack_Buffer, "to_s", "to_str");
     rb_define_method(cMessagePack_Buffer, "to_a", Buffer_to_a, 0);
 }
-

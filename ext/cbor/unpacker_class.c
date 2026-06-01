@@ -57,10 +57,9 @@ static void Unpacker_free(msgpack_unpacker_t* uk)
 
 static VALUE Unpacker_alloc(VALUE klass)
 {
-    msgpack_unpacker_t* uk = ALLOC_N(msgpack_unpacker_t, 1);
+    msgpack_unpacker_t* uk;
+    VALUE self = Data_Make_Struct(klass, msgpack_unpacker_t, msgpack_unpacker_mark, Unpacker_free, uk);
     msgpack_unpacker_init(uk);
-
-    VALUE self = Data_Wrap_Struct(klass, msgpack_unpacker_mark, Unpacker_free, uk);
 
     uk->buffer_ref = MessagePack_Buffer_wrap(UNPACKER_BUFFER_(uk), self);
 

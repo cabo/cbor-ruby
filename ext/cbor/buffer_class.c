@@ -63,10 +63,11 @@ static void Buffer_free(void* data)
 
 static VALUE Buffer_alloc(VALUE klass)
 {
-    msgpack_buffer_t* b = ALLOC_N(msgpack_buffer_t, 1);
+    msgpack_buffer_t* b;
+    VALUE self = Data_Make_Struct(klass, msgpack_buffer_t, msgpack_buffer_mark, Buffer_free, b);
     msgpack_buffer_init(b);
 
-    return Data_Wrap_Struct(klass, msgpack_buffer_mark, Buffer_free, b);
+    return self;
 }
 
 static ID get_partial_read_method(VALUE io)

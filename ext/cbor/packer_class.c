@@ -57,10 +57,9 @@ static void Packer_free(msgpack_packer_t* pk)
 
 static VALUE Packer_alloc(VALUE klass)
 {
-    msgpack_packer_t* pk = ALLOC_N(msgpack_packer_t, 1);
+    msgpack_packer_t* pk;
+    VALUE self = Data_Make_Struct(klass, msgpack_packer_t, msgpack_packer_mark, Packer_free, pk);
     msgpack_packer_init(pk);
-
-    VALUE self = Data_Wrap_Struct(klass, msgpack_packer_mark, Packer_free, pk);
 
     msgpack_packer_set_to_msgpack_method(pk, s_to_msgpack, self);
     pk->buffer_ref = MessagePack_Buffer_wrap(PACKER_BUFFER_(pk), self);

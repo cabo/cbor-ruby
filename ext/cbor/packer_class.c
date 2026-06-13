@@ -39,15 +39,23 @@ static ID s_write;
 //static VALUE s_packer_value;
 //static msgpack_packer_t* s_packer;
 
+static msgpack_packer_t* Packer_get(VALUE self);
+
 #define PACKER(from, name) \
-    msgpack_packer_t* name; \
-    Data_Get_Struct(from, msgpack_packer_t, name); \
+    msgpack_packer_t* name = Packer_get(from); \
     if(name == NULL) { \
         rb_raise(rb_eArgError, "NULL found for " # name " when shouldn't be."); \
     }
 
-static void Packer_free(msgpack_packer_t* pk)
+static void Packer_mark(void* data)
 {
+    msgpack_packer_t* pk = data;
+    msgpack_packer_mark(pk);
+}
+
+static void Packer_free(void* data)
+{
+    msgpack_packer_t* pk = data;
     if(pk == NULL) {
         return;
     }
@@ -55,12 +63,46 @@ static void Packer_free(msgpack_packer_t* pk)
     xfree(pk);
 }
 
+#ifdef TypedData_Make_Struct
+static size_t Packer_memsize(const void* data)
+{
+    return data == NULL ? 0 : sizeof(msgpack_packer_t);
+}
+
+static const rb_data_type_t packer_data_type = {
+    "CBOR::Packer",
+    {Packer_mark, Packer_free, Packer_memsize,},
+    NULL, NULL, 0
+};
+#endif
+
+static msgpack_packer_t* Packer_get(VALUE self)
+{
+    msgpack_packer_t* pk = NULL;
+#ifdef TypedData_Make_Struct
+    TypedData_Get_Struct(self, msgpack_packer_t, &packer_data_type, pk);
+#else
+    Data_Get_Struct(self, msgpack_packer_t, pk);
+#endif
+    return pk;
+}
+
+msgpack_packer_t* MessagePack_Packer_get(VALUE self)
+{
+    PACKER(self, pk);
+    return pk;
+}
+
 static VALUE Packer_alloc(VALUE klass)
 {
-    msgpack_packer_t* pk = ALLOC_N(msgpack_packer_t, 1);
+    msgpack_packer_t* pk;
+    VALUE self;
+#ifdef TypedData_Make_Struct
+    self = TypedData_Make_Struct(klass, msgpack_packer_t, &packer_data_type, pk);
+#else
+    self = Data_Make_Struct(klass, msgpack_packer_t, Packer_mark, Packer_free, pk);
+#endif
     msgpack_packer_init(pk);
-
-    VALUE self = Data_Wrap_Struct(klass, msgpack_packer_mark, Packer_free, pk);
 
     msgpack_packer_set_to_msgpack_method(pk, s_to_msgpack, self);
     pk->buffer_ref = MessagePack_Buffer_wrap(PACKER_BUFFER_(pk), self);
@@ -301,4 +343,3 @@ void MessagePack_Packer_module_init(VALUE mMessagePack)
     rb_define_module_function(mMessagePack, "encode", MessagePack_pack_module_method, -1);
     rb_define_module_function(mMessagePack, "dump", MessagePack_dump_module_method, -1);
 }
-

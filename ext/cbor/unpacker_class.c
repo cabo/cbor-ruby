@@ -39,15 +39,23 @@ static VALUE eMalformedFormatError;
 static VALUE eStackError;
 static VALUE eTypeError;
 
+static msgpack_unpacker_t* Unpacker_get(VALUE self);
+
 #define UNPACKER(from, name) \
-    msgpack_unpacker_t *name = NULL; \
-    Data_Get_Struct(from, msgpack_unpacker_t, name); \
+    msgpack_unpacker_t *name = Unpacker_get(from); \
     if(name == NULL) { \
         rb_raise(rb_eArgError, "NULL found for " # name " when shouldn't be."); \
     }
 
-static void Unpacker_free(msgpack_unpacker_t* uk)
+static void Unpacker_mark(void* data)
 {
+    msgpack_unpacker_t* uk = data;
+    msgpack_unpacker_mark(uk);
+}
+
+static void Unpacker_free(void* data)
+{
+    msgpack_unpacker_t* uk = data;
     if(uk == NULL) {
         return;
     }
@@ -55,12 +63,40 @@ static void Unpacker_free(msgpack_unpacker_t* uk)
     xfree(uk);
 }
 
+#ifdef TypedData_Make_Struct
+static size_t Unpacker_memsize(const void* data)
+{
+    return data == NULL ? 0 : sizeof(msgpack_unpacker_t);
+}
+
+static const rb_data_type_t unpacker_data_type = {
+    "CBOR::Unpacker",
+    {Unpacker_mark, Unpacker_free, Unpacker_memsize,},
+    NULL, NULL, 0
+};
+#endif
+
+static msgpack_unpacker_t* Unpacker_get(VALUE self)
+{
+    msgpack_unpacker_t* uk = NULL;
+#ifdef TypedData_Make_Struct
+    TypedData_Get_Struct(self, msgpack_unpacker_t, &unpacker_data_type, uk);
+#else
+    Data_Get_Struct(self, msgpack_unpacker_t, uk);
+#endif
+    return uk;
+}
+
 static VALUE Unpacker_alloc(VALUE klass)
 {
-    msgpack_unpacker_t* uk = ALLOC_N(msgpack_unpacker_t, 1);
+    msgpack_unpacker_t* uk;
+    VALUE self;
+#ifdef TypedData_Make_Struct
+    self = TypedData_Make_Struct(klass, msgpack_unpacker_t, &unpacker_data_type, uk);
+#else
+    self = Data_Make_Struct(klass, msgpack_unpacker_t, Unpacker_mark, Unpacker_free, uk);
+#endif
     msgpack_unpacker_init(uk);
-
-    VALUE self = Data_Wrap_Struct(klass, msgpack_unpacker_mark, Unpacker_free, uk);
 
     uk->buffer_ref = MessagePack_Buffer_wrap(UNPACKER_BUFFER_(uk), self);
 
@@ -426,4 +462,3 @@ void MessagePack_Unpacker_module_init(VALUE mMessagePack)
     rb_define_module_function(mMessagePack, "unpack", MessagePack_unpack_module_method, -1);
     rb_define_module_function(mMessagePack, "decode", MessagePack_unpack_module_method, -1);
 }
-

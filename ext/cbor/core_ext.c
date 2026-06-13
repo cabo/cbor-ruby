@@ -49,8 +49,7 @@ static inline VALUE delegete_to_pack(int argc, VALUE* argv, VALUE self)
         return delegete_to_pack(argc, argv, self); \
     } \
     VALUE packer = argv[0]; \
-    msgpack_packer_t *pk; \
-    Data_Get_Struct(packer, msgpack_packer_t, pk);
+    msgpack_packer_t *pk = MessagePack_Packer_get(packer);
 
 static VALUE NilClass_to_msgpack(int argc, VALUE* argv, VALUE self)
 {
@@ -198,4 +197,3 @@ void MessagePack_core_ext_module_init()
     rb_define_method(rb_cCBOR_Simple,   "to_cbor", Simple_to_msgpack, -1);
     rb_define_method(rb_cCBOR_Tagged,   "to_cbor", Tagged_to_msgpack, -1);
 }
-

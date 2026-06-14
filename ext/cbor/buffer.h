@@ -32,6 +32,8 @@
 #include "compat.h"
 #include "sysdep.h"
 
+#include <assert.h>
+
 #ifdef COMPAT_HAVE_ENCODING  /* see compat.h*/
 extern int s_enc_ascii8bit;
 extern int s_enc_usascii;
@@ -211,6 +213,8 @@ static inline void msgpack_buffer_write_2(msgpack_buffer_t* b, int byte1, unsign
 
 static inline void msgpack_buffer_write_byte_and_data(msgpack_buffer_t* b, int byte, const void* data, size_t length)
 {
+    /* Caller must have called msgpack_buffer_ensure_writable(b, length + 1) first. */
+    assert(length + 1 <= msgpack_buffer_writable_size(b));
     (*b->tail.last++) = (char) byte;
 
     memcpy(b->tail.last, data, length);

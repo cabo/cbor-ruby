@@ -10,6 +10,11 @@ Gem::Specification.new do |s|
   s.email = "cabo@tzi.org"
   s.license = "Apache-2.0"
   s.homepage = "http://cbor.io/"
+  s.metadata = {
+    "bug_tracker_uri"   => "https://github.com/cabo/cbor-ruby/issues",
+    "source_code_uri"   => "https://github.com/cabo/cbor-ruby/",
+  }
+
 #  s.has_rdoc = false
   s.files = `git ls-files`.split("\n")
   s.test_files = `git ls-files -- {test,spec}/*`.split("\n")

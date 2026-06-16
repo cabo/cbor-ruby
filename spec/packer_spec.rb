@@ -127,8 +127,9 @@ describe Packer do
   # Each context below exercises every head-size branch of cbor_encoder_write_head
   # (ext/cbor/packer.h) that funnels into msgpack_buffer_write_byte_and_data.
   # msgpack_buffer_ensure_writable is always called immediately before
-  # msgpack_buffer_write_byte_and_data at every call site, so the buffer is
-  # unconditionally expanded to fit before the write — no overrun is possible.
+  # msgpack_buffer_write_byte_and_data at every call site; it expands the buffer
+  # when needed, so the buffer is unconditionally sized to fit before the write —
+  # no overrun is possible.
   # Round-trip equality confirms the encode path remains correct.
   describe 'head-size branches into write_byte_and_data' do
     it 'encodes uint in 16-bit head range (256..65535) and round-trips' do

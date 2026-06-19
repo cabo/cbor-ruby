@@ -130,7 +130,7 @@ describe Packer do
   # Note on buffer safety: an earlier version of this PR proposed adding
   #   assert(length + 1 <= msgpack_buffer_writable_size(b))
   # inside msgpack_buffer_write_byte_and_data (ext/cbor/buffer.h).
-  # That assertion was dropped on 's review: msgpack_buffer_ensure_writable
+  # That assertion was dropped on @cabo's review: msgpack_buffer_ensure_writable
   # is called on the line immediately before *every* msgpack_buffer_write_byte_and_data
   # call site, and it expands the buffer to at least `require' bytes when needed
   # (buffer.h:232-237). The assertion would therefore be tautologically true — it

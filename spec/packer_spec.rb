@@ -123,5 +123,99 @@ describe Packer do
     CustomPack02.new.to_cbor(s04)
     s04.string.should == [1,2].to_cbor
   end
+
+  # Round-trip coverage for every cbor_encoder_write_head branch
+  # (ext/cbor/packer.h) that routes through msgpack_buffer_write_byte_and_data.
+  # msgpack_buffer_ensure_writable is always called on the line before each
+  # write site and expands the buffer to the required capacity as part of
+  # normal operation, so no separate assertion or guard is needed.
+  describe 'head-size branches into write_byte_and_data' do
+    it 'encodes uint in 16-bit head range (256..65535) and round-trips' do
+      [256, 1000, 65535].each do |n|
+        bytes = CBOR.encode(n)
+        bytes.bytes[0].should == 0x19
+        bytes.bytesize.should == 3
+        CBOR.decode(bytes).should == n
+      end
+    end
+
+    it 'encodes uint in 32-bit head range (65536..2**32-1) and round-trips' do
+      [65536, 1_000_000, (2**32) - 1].each do |n|
+        bytes = CBOR.encode(n)
+        bytes.bytes[0].should == 0x1a
+        bytes.bytesize.should == 5
+        CBOR.decode(bytes).should == n
+      end
+    end
+
+    it 'encodes uint in 64-bit head range (>= 2**32) and round-trips' do
+      [2**32, 2**40, (2**64) - 1].each do |n|
+        bytes = CBOR.encode(n)
+        bytes.bytes[0].should == 0x1b
+        bytes.bytesize.should == 9
+        CBOR.decode(bytes).should == n
+      end
+    end
+
+    it 'encodes negative ints across head-size branches and round-trips' do
+      # negative encoding uses major type 1 (0x20 base) with same AI ladder
+      [-257, -65537, -(2**32) - 1].each do |n|
+        CBOR.decode(CBOR.encode(n)).should == n
+      end
+    end
+
+    it 'encodes byte/text strings whose length hits the 16-bit head branch' do
+      s = "x" * 1000
+      bytes = CBOR.encode(s)
+      bytes.bytes[0].should == (0x60 + 25) # IB_TEXT + AI_2 = 0x79
+      CBOR.decode(bytes).should == s
+
+      b = ("\x00".b * 1000)
+      enc = CBOR.encode(b)
+      enc.bytes[0].should == (0x40 + 25) # IB_BYTES + AI_2 = 0x59
+      CBOR.decode(enc).should == b
+    end
+
+    it 'encodes byte string whose length hits the 32-bit head branch' do
+      s = "x" * 70_000
+      bytes = CBOR.encode(s)
+      bytes.bytes[0].should == (0x60 + 26) # IB_TEXT + AI_4 = 0x7a
+      bytes.bytesize.should == 5 + s.bytesize
+      CBOR.decode(bytes).should == s
+    end
+
+    it 'encodes array/map headers across head-size branches' do
+      packer.write_array_header(500)
+      packer.to_s.bytes[0].should == (0x80 + 25) # IB_ARRAY + AI_2 = 0x99
+
+      pk2 = Packer.new
+      pk2.write_array_header(70_000)
+      pk2.to_s.bytes[0].should == (0x80 + 26) # IB_ARRAY + AI_4 = 0x9a
+
+      pk3 = Packer.new
+      pk3.write_map_header(500)
+      pk3.to_s.bytes[0].should == (0xa0 + 25) # IB_MAP + AI_2 = 0xb9
+    end
+
+    it 'encodes floats via half/single/double paths and round-trips' do
+      # half (3-byte): exactly-representable small value
+      half_bytes = CBOR.encode(1.5)
+      half_bytes.bytes[0].should == 0xf9
+      half_bytes.bytesize.should == 3
+      CBOR.decode(half_bytes).should == 1.5
+
+      # single (5-byte): needs float32 precision but not float64
+      single_bytes = CBOR.encode(100000.5)
+      single_bytes.bytes[0].should == 0xfa
+      single_bytes.bytesize.should == 5
+      CBOR.decode(single_bytes).should == 100000.5
+
+      # double (9-byte): value not representable in float32
+      double_bytes = CBOR.encode(1.1)
+      double_bytes.bytes[0].should == 0xfb
+      double_bytes.bytesize.should == 9
+      CBOR.decode(double_bytes).should == 1.1
+    end
+  end
 end
 

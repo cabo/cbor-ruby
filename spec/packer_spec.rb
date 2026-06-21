@@ -124,13 +124,11 @@ describe Packer do
     s04.string.should == [1,2].to_cbor
   end
 
-  # Round-trip coverage for every head-size branch of cbor_encoder_write_head
-  # (ext/cbor/packer.h) that calls msgpack_buffer_write_byte_and_data.
-  #
-  # Buffer safety note: msgpack_buffer_ensure_writable is called immediately
-  # before every msgpack_buffer_write_byte_and_data call site and expands the
-  # buffer to at least the required size when needed (buffer.h:232-237), so
-  # the buffer is always pre-sized before the write occurs.
+  # Round-trip coverage for every cbor_encoder_write_head branch
+  # (ext/cbor/packer.h) that routes through msgpack_buffer_write_byte_and_data.
+  # msgpack_buffer_ensure_writable is always called on the line before each
+  # write site and expands the buffer to the required capacity as part of
+  # normal operation, so no separate assertion or guard is needed.
   describe 'head-size branches into write_byte_and_data' do
     it 'encodes uint in 16-bit head range (256..65535) and round-trips' do
       [256, 1000, 65535].each do |n|

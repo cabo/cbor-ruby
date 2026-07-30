@@ -268,11 +268,13 @@ static inline void msgpack_packer_write_bignum_value(msgpack_packer_t* pk, VALUE
     cbor_encoder_write_head(pk, IB_BYTES, len);
     msgpack_buffer_ensure_writable(PACKER_BUFFER_(pk), len);
 
-    char buf[len];              /* XXX */
+    VALUE buf_v;
+    char *buf = ALLOCV_N(char, buf_v, len); /* MSVC C has no VLA */
     if (rb_integer_pack(v, buf, len, 1, 0, INTEGER_PACK_BIG_ENDIAN) != 1)
       rb_raise(rb_eRangeError, "cbor rb_integer_pack() error");
 
     msgpack_buffer_append(PACKER_BUFFER_(pk), buf, len);
+    ALLOCV_END(buf_v);
 
 #else
 
@@ -356,7 +358,7 @@ void msgpack_packer_write_value(msgpack_packer_t* pk, VALUE v);
 
 static inline void msgpack_packer_write_tagged_value(msgpack_packer_t* pk, VALUE v)
 {
-  cbor_encoder_write_head(pk, IB_TAG, rb_num2ulong(rb_struct_aref(v, INT2FIX(0))));
+  cbor_encoder_write_head(pk, IB_TAG, rb_num2ull(rb_struct_aref(v, INT2FIX(0))));
   msgpack_packer_write_value(pk, rb_struct_aref(v, INT2FIX(1)));
 }
 

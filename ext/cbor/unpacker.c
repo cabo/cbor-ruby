@@ -395,7 +395,9 @@ static int read_primitive(msgpack_unpacker_t* uk)
         if (val == 0) {
             return object_complete(uk, rb_hash_new());
         }
-        return _msgpack_unpacker_stack_push(uk, STACK_TYPE_MAP_KEY, val*2, rb_hash_new());
+        return _msgpack_unpacker_stack_push(uk, STACK_TYPE_MAP_KEY,
+                                            val > SIZE_MAX / 2 ? SIZE_MAX : val*2,
+                                            rb_hash_new());
     CASE_AI(MT_TAG):
       READ_VAL(uk, ai, val);
     CASE_IMM(MT_TAG): // tag
@@ -773,4 +775,3 @@ int msgpack_unpacker_skip_nil(msgpack_unpacker_t* uk)
     }
     return 0;
 }
-

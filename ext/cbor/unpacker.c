@@ -31,10 +31,10 @@
 
 /* work around https://bugs.ruby-lang.org/issues/15779 for now
  * by limiting preallocation to about a half a Mebibyte
- * limit is 2**n-1 (n==16) items so we can avoid a conditional
+ * limit is 2**n-1 (n==16) items
  */
 #define SANE_PREALLOCATION_MAX 0xFFFFUL
-#define SANE_PREALLOCATE(n) (n & SANE_PREALLOCATION_MAX)
+#define SANE_PREALLOCATE(n) ((n) > SANE_PREALLOCATION_MAX ? SANE_PREALLOCATION_MAX : (n))
 
 #if !defined(DISABLE_RMEM) && !defined(DISABLE_UNPACKER_STACK_RMEM) && \
         MSGPACK_UNPACKER_STACK_CAPACITY * MSGPACK_UNPACKER_STACK_SIZE <= MSGPACK_RMEM_PAGE_SIZE
@@ -773,4 +773,3 @@ int msgpack_unpacker_skip_nil(msgpack_unpacker_t* uk)
     }
     return 0;
 }
-

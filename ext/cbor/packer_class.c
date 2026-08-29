@@ -128,14 +128,14 @@ static VALUE Packer_write_nil(VALUE self)
 static VALUE Packer_write_array_header(VALUE self, VALUE n)
 {
     PACKER(self, pk);
-    msgpack_packer_write_array_header(pk, NUM2UINT(n));
+    msgpack_packer_write_array_header(pk, NUM2ULL(n));
     return self;
 }
 
 static VALUE Packer_write_map_header(VALUE self, VALUE n)
 {
     PACKER(self, pk);
-    msgpack_packer_write_map_header(pk, NUM2UINT(n));
+    msgpack_packer_write_map_header(pk, NUM2ULL(n));
     return self;
 }
 
@@ -301,4 +301,3 @@ void MessagePack_Packer_module_init(VALUE mMessagePack)
     rb_define_module_function(mMessagePack, "encode", MessagePack_pack_module_method, -1);
     rb_define_module_function(mMessagePack, "dump", MessagePack_dump_module_method, -1);
 }
-

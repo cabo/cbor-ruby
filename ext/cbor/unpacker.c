@@ -703,6 +703,8 @@ int msgpack_unpacker_skip(msgpack_unpacker_t* uk, size_t target_stack_depth)
         /* PRIMITIVE_OBJECT_COMPLETE */
 
         if(msgpack_unpacker_stack_is_empty(uk)) {
+            if(r == PRIMITIVE_BREAK)
+                return PRIMITIVE_INVALID_BYTE;
             return PRIMITIVE_OBJECT_COMPLETE;
         }
 
@@ -710,17 +712,44 @@ int msgpack_unpacker_skip(msgpack_unpacker_t* uk, size_t target_stack_depth)
         {
             msgpack_unpacker_stack_t* top = _msgpack_unpacker_stack_top(uk);
 
-            /* this section optimized out */
-            // TODO object_complete still creates objects which should be optimized out
-            /* XXX: check INDEF! */
+            if (top->type <= STACK_TYPE_MAP_VALUE_INDEF && r == PRIMITIVE_BREAK)
+                return PRIMITIVE_INVALID_BYTE;
+            switch(top->type) {
+            case STACK_TYPE_ARRAY_INDEF:
+                if (r == PRIMITIVE_BREAK)
+                    goto complete;
+                continue;
+            case STACK_TYPE_MAP_KEY_INDEF:
+                if (r == PRIMITIVE_BREAK)
+                    goto complete;
+                top->type = STACK_TYPE_MAP_VALUE_INDEF;
+                continue;
+            case STACK_TYPE_MAP_VALUE_INDEF:
+                top->type = STACK_TYPE_MAP_KEY_INDEF;
+                continue;
+            case STACK_TYPE_STRING_INDEF:
+                if (r == PRIMITIVE_BREAK)
+                    goto complete;
+                if (!RB_TYPE_P(uk->last_object, T_STRING))
+                    return PRIMITIVE_INVALID_BYTE;
+#ifdef COMPAT_HAVE_ENCODING
+                if (ENCODING_GET(top->object) != ENCODING_GET(uk->last_object))
+                    return PRIMITIVE_INVALID_BYTE;
+#endif
+                continue;
+            default:
+                break;
+            }
 
             size_t count = --top->count;
 
             if(count == 0) {
+            complete:;
                 object_complete(uk, Qnil);
                 if(msgpack_unpacker_stack_pop(uk) <= target_stack_depth) {
                     return PRIMITIVE_OBJECT_COMPLETE;
                 }
+                r = PRIMITIVE_OBJECT_COMPLETE;
                 goto container_completed;
             }
         }
@@ -773,4 +802,3 @@ int msgpack_unpacker_skip_nil(msgpack_unpacker_t* uk)
     }
     return 0;
 }
-

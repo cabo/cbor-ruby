@@ -388,7 +388,8 @@ static int read_primitive(msgpack_unpacker_t* uk)
         if (val == 0) {
             return object_complete(uk, rb_ary_new());
         }
-        return _msgpack_unpacker_stack_push(uk, STACK_TYPE_ARRAY, val, rb_ary_new2(SANE_PREALLOCATE(val)));
+        /* Grow only as elements arrive: the declared length is untrusted. */
+        return _msgpack_unpacker_stack_push(uk, STACK_TYPE_ARRAY, val, rb_ary_new());
     CASE_AI(MT_MAP):
       READ_VAL(uk, ai, val);
     CASE_IMM(MT_MAP): // map

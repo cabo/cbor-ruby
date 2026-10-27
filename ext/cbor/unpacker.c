@@ -31,10 +31,10 @@
 
 /* work around https://bugs.ruby-lang.org/issues/15779 for now
  * by limiting preallocation to about a half a Mebibyte
- * limit is 2**n-1 (n==16) items so we can avoid a conditional
+ * limit is 2**n-1 (n==16) items
  */
 #define SANE_PREALLOCATION_MAX 0xFFFFUL
-#define SANE_PREALLOCATE(n) (n & SANE_PREALLOCATION_MAX)
+#define SANE_PREALLOCATE(n) ((n) > SANE_PREALLOCATION_MAX ? SANE_PREALLOCATION_MAX : (n))
 
 #if !defined(DISABLE_RMEM) && !defined(DISABLE_UNPACKER_STACK_RMEM) && \
         MSGPACK_UNPACKER_STACK_CAPACITY * MSGPACK_UNPACKER_STACK_SIZE <= MSGPACK_RMEM_PAGE_SIZE
@@ -388,7 +388,8 @@ static int read_primitive(msgpack_unpacker_t* uk)
         if (val == 0) {
             return object_complete(uk, rb_ary_new());
         }
-        return _msgpack_unpacker_stack_push(uk, STACK_TYPE_ARRAY, val, rb_ary_new2(SANE_PREALLOCATE(val)));
+        /* Grow only as elements arrive: the declared length is untrusted. */
+        return _msgpack_unpacker_stack_push(uk, STACK_TYPE_ARRAY, val, rb_ary_new());
     CASE_AI(MT_MAP):
       READ_VAL(uk, ai, val);
     CASE_IMM(MT_MAP): // map
@@ -773,4 +774,3 @@ int msgpack_unpacker_skip_nil(msgpack_unpacker_t* uk)
     }
     return 0;
 }
-

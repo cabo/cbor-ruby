@@ -90,6 +90,27 @@ describe Unpacker do
     }.should raise_error(EOFError)
   end
 
+  if defined?(RUBY_ENGINE) && RUBY_ENGINE == 'ruby'
+    require 'objspace'
+
+    if ObjectSpace.respond_to?(:memsize_of_all)
+      it 'does not preallocate arrays from untrusted declared lengths' do
+        # Each three-byte header declares 65,535 elements but provides only a
+        # nested array. A decoder must grow arrays as elements actually arrive.
+        input = "\x99\xff\xff".b * 32
+        GC.start
+        was_disabled = GC.disable
+        begin
+          before = ObjectSpace.memsize_of_all(Array)
+          lambda { CBOR.decode(input) }.should raise_error(EOFError)
+          (ObjectSpace.memsize_of_all(Array) - before).should be < 1_000_000
+        ensure
+          GC.enable unless was_disabled
+        end
+      end
+    end
+  end
+
   it 'skip raises EOFError' do
     lambda {
       unpacker.skip

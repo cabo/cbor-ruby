@@ -50,7 +50,7 @@ static inline VALUE delegete_to_pack(int argc, VALUE* argv, VALUE self)
     } \
     VALUE packer = argv[0]; \
     msgpack_packer_t *pk; \
-    Data_Get_Struct(packer, msgpack_packer_t, pk);
+    TypedData_Get_Struct(packer, msgpack_packer_t, &CBOR_packer_data_type, pk);
 
 static VALUE NilClass_to_msgpack(int argc, VALUE* argv, VALUE self)
 {

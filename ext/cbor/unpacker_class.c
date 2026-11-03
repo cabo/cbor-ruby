@@ -41,7 +41,7 @@ static VALUE eTypeError;
 
 #define UNPACKER(from, name) \
     msgpack_unpacker_t *name = NULL; \
-    Data_Get_Struct(from, msgpack_unpacker_t, name); \
+    TypedData_Get_Struct(from, msgpack_unpacker_t, &unpacker_data_type, name); \
     if(name == NULL) { \
         rb_raise(rb_eArgError, "NULL found for " # name " when shouldn't be."); \
     }
@@ -55,12 +55,18 @@ static void Unpacker_free(msgpack_unpacker_t* uk)
     xfree(uk);
 }
 
+static const rb_data_type_t unpacker_data_type = {
+    "CBOR::Unpacker",
+    { (RUBY_DATA_FUNC) msgpack_unpacker_mark, (RUBY_DATA_FUNC) Unpacker_free, NULL },
+    NULL, NULL, 0
+};
+
 static VALUE Unpacker_alloc(VALUE klass)
 {
     msgpack_unpacker_t* uk = ALLOC_N(msgpack_unpacker_t, 1);
     msgpack_unpacker_init(uk);
 
-    VALUE self = Data_Wrap_Struct(klass, msgpack_unpacker_mark, Unpacker_free, uk);
+    VALUE self = TypedData_Wrap_Struct(klass, &unpacker_data_type, uk);
 
     uk->buffer_ref = MessagePack_Buffer_wrap(UNPACKER_BUFFER_(uk), self);
 

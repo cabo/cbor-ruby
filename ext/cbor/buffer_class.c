@@ -40,7 +40,7 @@ static ID s_close;
 
 #define BUFFER(from, name) \
     msgpack_buffer_t *name = NULL; \
-    Data_Get_Struct(from, msgpack_buffer_t, name); \
+    TypedData_Get_Struct(from, msgpack_buffer_t, &buffer_data_type, name); \
     if(name == NULL) { \
         rb_raise(rb_eArgError, "NULL found for " # name " when shouldn't be."); \
     }
@@ -61,12 +61,24 @@ static void Buffer_free(void* data)
     xfree(b);
 }
 
+static const rb_data_type_t buffer_data_type = {
+    "CBOR::Buffer",
+    { (RUBY_DATA_FUNC) msgpack_buffer_mark, Buffer_free, NULL },
+    NULL, NULL, 0
+};
+
+static const rb_data_type_t buffer_view_data_type = {
+    "CBOR::Buffer view",
+    { (RUBY_DATA_FUNC) msgpack_buffer_mark, NULL, NULL },
+    &buffer_data_type, NULL, 0
+};
+
 static VALUE Buffer_alloc(VALUE klass)
 {
     msgpack_buffer_t* b = ALLOC_N(msgpack_buffer_t, 1);
     msgpack_buffer_init(b);
 
-    return Data_Wrap_Struct(klass, msgpack_buffer_mark, Buffer_free, b);
+    return TypedData_Wrap_Struct(klass, &buffer_data_type, b);
 }
 
 static ID get_partial_read_method(VALUE io)
@@ -118,7 +130,7 @@ void MessagePack_Buffer_initialize(msgpack_buffer_t* b, VALUE io, VALUE options)
 VALUE MessagePack_Buffer_wrap(msgpack_buffer_t* b, VALUE owner)
 {
     b->owner = owner;
-    return Data_Wrap_Struct(cMessagePack_Buffer, msgpack_buffer_mark, NULL, b);
+    return TypedData_Wrap_Struct(cMessagePack_Buffer, &buffer_view_data_type, b);
 }
 
 static VALUE Buffer_initialize(int argc, VALUE* argv, VALUE self)

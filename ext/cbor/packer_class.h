@@ -31,6 +31,8 @@
 
 extern VALUE cMessagePack_Packer;
 
+extern const rb_data_type_t CBOR_packer_data_type;
+
 void MessagePack_Packer_module_init(VALUE mMessagePack);
 
 VALUE MessagePack_pack(int argc, VALUE* argv);

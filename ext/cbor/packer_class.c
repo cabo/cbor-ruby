@@ -41,7 +41,7 @@ static ID s_write;
 
 #define PACKER(from, name) \
     msgpack_packer_t* name; \
-    Data_Get_Struct(from, msgpack_packer_t, name); \
+    TypedData_Get_Struct(from, msgpack_packer_t, &CBOR_packer_data_type, name); \
     if(name == NULL) { \
         rb_raise(rb_eArgError, "NULL found for " # name " when shouldn't be."); \
     }
@@ -55,12 +55,18 @@ static void Packer_free(msgpack_packer_t* pk)
     xfree(pk);
 }
 
+const rb_data_type_t CBOR_packer_data_type = {
+    "CBOR::Packer",
+    { (RUBY_DATA_FUNC) msgpack_packer_mark, (RUBY_DATA_FUNC) Packer_free, NULL },
+    NULL, NULL, 0
+};
+
 static VALUE Packer_alloc(VALUE klass)
 {
     msgpack_packer_t* pk = ALLOC_N(msgpack_packer_t, 1);
     msgpack_packer_init(pk);
 
-    VALUE self = Data_Wrap_Struct(klass, msgpack_packer_mark, Packer_free, pk);
+    VALUE self = TypedData_Wrap_Struct(klass, &CBOR_packer_data_type, pk);
 
     msgpack_packer_set_to_msgpack_method(pk, s_to_msgpack, self);
     pk->buffer_ref = MessagePack_Buffer_wrap(PACKER_BUFFER_(pk), self);

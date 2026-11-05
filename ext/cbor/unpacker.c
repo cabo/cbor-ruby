@@ -30,10 +30,10 @@
 #include <math.h>               /* for ldexp */
 
 /* work around https://bugs.ruby-lang.org/issues/15779 for now
- * by limiting preallocation to about a Tebibyte
- * limit is 2**n-1 (n==28) so we can avoid a conditional
+ * by limiting preallocation to about a half a Mebibyte
+ * limit is 2**n-1 (n==16) items so we can avoid a conditional
  */
-#define SANE_PREALLOCATION_MAX 0xFFFFFFFUL
+#define SANE_PREALLOCATION_MAX 0xFFFFUL
 #define SANE_PREALLOCATE(n) (n & SANE_PREALLOCATION_MAX)
 
 #if !defined(DISABLE_RMEM) && !defined(DISABLE_UNPACKER_STACK_RMEM) && \

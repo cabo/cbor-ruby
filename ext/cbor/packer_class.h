@@ -31,9 +31,10 @@
 
 extern VALUE cMessagePack_Packer;
 
+msgpack_packer_t* MessagePack_Packer_get(VALUE self);
+
 void MessagePack_Packer_module_init(VALUE mMessagePack);
 
 VALUE MessagePack_pack(int argc, VALUE* argv);
 
 #endif
-

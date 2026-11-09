@@ -455,6 +455,7 @@ describe MessagePack do
     check_decode "\xd8\x20\x78\x13http://www.ietf.org", CBOR::Tagged.new(32, "http://www.ietf.org")
     # Opt in to reconstruct the URI by listing its tag.
     check_decode "\xd8\x20\x78\x13http://www.ietf.org", URI.parse("http://www.ietf.org"), reconstruct_from_tags: [CBOR::TAG_URI]
+    expect { check_decode "\xd8\x20\x78\x13h``p://www.ietf.org", URI.parse("http://www.ietf.org"), reconstruct_from_tags: [CBOR::TAG_URI] }.to raise_error(URI::InvalidURIError)
   end
 
   it "regexp" do
@@ -462,6 +463,7 @@ describe MessagePack do
     check_decode "\xd8\x23\x63foo", CBOR::Tagged.new(35, "foo")
     # Opt in to reconstruct the Regexp by listing its tag.
     check_decode "\xd8\x23\x63foo", /foo/, reconstruct_from_tags: [CBOR::TAG_REGEXP]
+    expect { check_decode "\xd8\x23\x63*oo", /foo/, reconstruct_from_tags: [CBOR::TAG_REGEXP] }.to raise_error(RegexpError)
     check 14, /(?-mix:foo)/, reconstruct_from_tags: [CBOR::TAG_REGEXP]
     check 6, /foo/, reconstruct_from_tags: [CBOR::TAG_REGEXP]
   end

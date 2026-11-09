@@ -450,17 +450,20 @@ describe MessagePack do
   end
 
   it "URI" do
-    # check_decode "\xd8\x20\x78\x13http://www.ietf.org", CBOR::Tagged.new(32, "http://www.ietf.org")
     require 'uri'
-    check_decode "\xd8\x20\x78\x13http://www.ietf.org", URI.parse("http://www.ietf.org")
-    # This doesn't work yet if 'uri' is not required before 'cbor':
-    # check 6, URI.parse("http://www.ietf.org")
+    # Safe default: object-constructing tags are not reconstructed.
+    check_decode "\xd8\x20\x78\x13http://www.ietf.org", CBOR::Tagged.new(32, "http://www.ietf.org")
+    # Opt in to reconstruct the URI by listing its tag.
+    check_decode "\xd8\x20\x78\x13http://www.ietf.org", URI.parse("http://www.ietf.org"), reconstruct_from_tags: [CBOR::TAG_URI]
   end
 
   it "regexp" do
-    check_decode "\xd8\x23\x63foo", /foo/
-    check 14, /(?-mix:foo)/
-    check 6, /foo/
+    # Safe default: tag 35 is not compiled into a Regexp.
+    check_decode "\xd8\x23\x63foo", CBOR::Tagged.new(35, "foo")
+    # Opt in to reconstruct the Regexp by listing its tag.
+    check_decode "\xd8\x23\x63foo", /foo/, reconstruct_from_tags: [CBOR::TAG_REGEXP]
+    check 14, /(?-mix:foo)/, reconstruct_from_tags: [CBOR::TAG_REGEXP]
+    check 6, /foo/, reconstruct_from_tags: [CBOR::TAG_REGEXP]
   end
 
   it "Unknown simple 0" do
@@ -559,10 +562,10 @@ describe MessagePack do
 #    #check_map 5, (1<<32)-1  # memory error
 #  end
 
-  def check(len, obj)
+  def check(len, obj, opts = nil)
     raw = obj.to_cbor.to_s
     raw.length.should == len
-    obj2 = MessagePack.unpack(raw)
+    obj2 = opts ? MessagePack.unpack(raw, opts) : MessagePack.unpack(raw)
     obj2.should == obj
     if obj.respond_to? :encoding
       obj2.encoding.should == obj.encoding
@@ -588,8 +591,8 @@ describe MessagePack do
     raw.should == buf
   end
 
-  def check_decode(c, obj)
-    obj2 = MessagePack.unpack(c)
+  def check_decode(c, obj, opts = nil)
+    obj2 = opts ? MessagePack.unpack(c, opts) : MessagePack.unpack(c)
     obj2.should == obj
     if obj.respond_to? :encoding
       obj2.encoding.should == obj.encoding

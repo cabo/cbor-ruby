@@ -1,3 +1,24 @@
+2026-11-08  Carsten Bormann  <cabo@tzi.org>
+
+	* Safer decode defaults (BREAKING).  Object-constructing
+	tags are no longer reconstructed into live Ruby objects by default,
+	because CBOR.decode is commonly run on input from untrusted sources.
+	Tag 35 (Regexp) and tag 32 (URI) now decode to a generic CBOR::Tagged
+	value instead of building a Regexp or URI from the decoded value.  A
+	caller that trusts the source opts in per tag:
+
+	    CBOR.decode(data)                                   # CBOR::Tagged
+	    CBOR.decode(data, reconstruct_from_tags: [CBOR::TAG_REGEXP])
+	    CBOR.decode(data, reconstruct_from_tags: [CBOR::TAG_URI])
+
+	Module constants CBOR::TAG_REGEXP (35) and CBOR::TAG_URI (32) are
+	provided; bare integers are also accepted.  Tag 0/1 (time) stays on
+	by default, as reconstructing a Time from an epoch is a plain value
+	conversion.  The option works for both CBOR.decode and Unpacker.new,
+	like the existing symbolize_keys option.  This mirrors the principle
+	behind YAML.safe_load and JSON.parse(create_additions: false):
+	turning wire data into live objects should be opt-in.
+
 2016-04-11  Carsten Bormann  <cabo@tzi.org>
 
 	* 0.5.9.1: Fix WIN32 problem inherited from upstream

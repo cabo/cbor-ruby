@@ -43,6 +43,12 @@ void Init_cbor(void)
     rb_cCBOR_Simple = rb_struct_define(NULL, "value", NULL);
     rb_define_const(mMessagePack, "Simple", rb_cCBOR_Simple);
 
+    /* CBOR tag numbers accepted by the decode option reconstruct_from_tags:,
+       so callers can write reconstruct_from_tags: [CBOR::TAG_REGEXP] instead of
+       a bare integer. */
+    rb_define_const(mMessagePack, "TAG_URI", INT2FIX(TAG_URI));
+    rb_define_const(mMessagePack, "TAG_REGEXP", INT2FIX(TAG_RE));
+
     MessagePack_Buffer_module_init(mMessagePack);
     MessagePack_Packer_module_init(mMessagePack);
     MessagePack_Unpacker_module_init(mMessagePack);

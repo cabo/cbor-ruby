@@ -103,6 +103,23 @@ static VALUE Unpacker_alloc(VALUE klass)
     return self;
 }
 
+/* reconstruct_from_tags: a list of CBOR tag numbers whose decoded value should be
+   reconstructed into a live Ruby object.  Only the object-constructing tags
+   are gated (35 -> Regexp, 32 -> URI); anything else decodes to CBOR::Tagged.
+   Absent or non-Array means "none", the safe default. */
+static void set_reconstruct_from_tags(msgpack_unpacker_t* uk, VALUE options)
+{
+    VALUE tags;
+    if (!RB_TYPE_P(options, T_HASH))
+        return;
+    tags = rb_hash_aref(options, ID2SYM(rb_intern("reconstruct_from_tags")));
+    if (RB_TYPE_P(tags, T_ARRAY)) {
+        ID include_p = rb_intern("include?");
+        uk->reconstruct_regexp = RTEST(rb_funcall(tags, include_p, 1, INT2FIX(TAG_RE)));
+        uk->reconstruct_uri    = RTEST(rb_funcall(tags, include_p, 1, INT2FIX(TAG_URI)));
+    }
+}
+
 static VALUE Unpacker_initialize(int argc, VALUE* argv, VALUE self)
 {
     VALUE io = Qnil;
@@ -137,6 +154,7 @@ static VALUE Unpacker_initialize(int argc, VALUE* argv, VALUE self)
           VALUE v;
           v = rb_hash_aref(options, ID2SYM(rb_intern("symbolize_keys")));
           uk->keys_as_symbols = RTEST(v);
+          set_reconstruct_from_tags(uk, options);
         }
     }
 
@@ -380,7 +398,8 @@ VALUE MessagePack_unpack(int argc, VALUE* argv)
     msgpack_buffer_set_write_reference_threshold(UNPACKER_BUFFER_(uk), 0);
 
     uk->keys_as_symbols = keys_as_symbols;
-    
+    set_reconstruct_from_tags(uk, options);
+
     if(io != Qnil) {
         MessagePack_Buffer_initialize(UNPACKER_BUFFER_(uk), io, Qnil);
     }

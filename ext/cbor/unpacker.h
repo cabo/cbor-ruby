@@ -73,7 +73,9 @@ struct msgpack_unpacker_t {
     int textflag;
 
   bool keys_as_symbols;         /* Experimental */
-  
+  bool reconstruct_regexp;      /* reconstruct tag 35 (Regexp); opt-in */
+  bool reconstruct_uri;         /* reconstruct tag 32 (URI); opt-in */
+
     VALUE buffer_ref;
 };
 

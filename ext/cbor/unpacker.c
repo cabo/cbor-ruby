@@ -515,16 +515,27 @@ int msgpack_unpacker_read_map_header(msgpack_unpacker_t* uk, uint64_t* result_si
   return msgpack_unpacker_read_container_header(uk, result_size, IB_MAP);
 }
 
-static VALUE msgpack_unpacker_process_tag(uint64_t tag, VALUE v) {
+static VALUE msgpack_unpacker_process_tag(msgpack_unpacker_t* uk, uint64_t tag, VALUE v) {
   VALUE res = v;
   switch (tag) {
   case TAG_TIME_EPOCH: {
     return rb_funcall(rb_cTime, rb_intern("at"), 1, v);
   }
   case TAG_RE: {
+    /* Reconstructing a Regexp runs the decoded data through Regexp.new,
+       which the caller may not want when decoding input from an untrusted
+       source.  Only do it when the caller opts in with
+       reconstruct_from_tags: [35]; otherwise return the value as a generic
+       tagged object. */
+    if (!uk->reconstruct_regexp)
+      goto unknown_tag;
     return rb_funcall(rb_cRegexp, rb_intern("new"), 1, v);
   }
   case TAG_URI: {
+    /* Likewise, building a URI from the decoded value is opt-in via
+       reconstruct_from_tags: [32]. */
+    if (!uk->reconstruct_uri)
+      goto unknown_tag;
     if (!rb_const_defined(rb_cObject, rb_intern("URI")))
       goto unknown_tag;
     return rb_funcall(rb_const_get(rb_cObject, rb_intern("URI")),
@@ -642,7 +653,7 @@ int msgpack_unpacker_read(msgpack_unpacker_t* uk, size_t target_stack_depth)
                 top->type = STACK_TYPE_MAP_KEY;
                 break;
             case STACK_TYPE_TAG:
-              object_complete(uk, msgpack_unpacker_process_tag(top->tag, uk->last_object));
+              object_complete(uk, msgpack_unpacker_process_tag(uk, top->tag, uk->last_object));
               goto done;
               
             case STACK_TYPE_ARRAY_INDEF:

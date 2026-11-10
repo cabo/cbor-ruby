@@ -1,6 +1,6 @@
-2026-11-08  Carsten Bormann  <cabo@tzi.org>
+2026-11-10  Carsten Bormann  <cabo@tzi.org>
 
-	* Safer decode defaults (BREAKING).  Object-constructing
+	* 0.6.2.2: Safer decode defaults (BREAKING).  Object-constructing
 	tags are no longer reconstructed into live Ruby objects by default,
 	because CBOR.decode is commonly run on input from untrusted sources.
 	Tag 35 (Regexp) and tag 32 (URI) now decode to a generic CBOR::Tagged

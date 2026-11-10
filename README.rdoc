@@ -15,6 +15,18 @@ Use RubyGems to install:
 
     gem install cbor
 
+CBOR is an object representation format defined by the IETF[http://ietf.org].
+The specification[http://tools.ietf.org/html/rfc8949]
+is an IETF Standards-Track specification
+and has been published as RFC 8949 (superseding the older RFC 7049).
+
+This is all based on wonderful work by frsyuki, and I have no idea how
+to acknowledge him appropriately.  This gem is not intended to fork or
+supersede MessagePack[http://msgpack.org], which has a vibrant
+ecosystem.  It is just making use of the high-quality code that is
+available in this community.  If MessagePack works for you, go for it.
+If you need CBOR, you need this.
+
 == Decoding untrusted input
 
 +CBOR.decode+ is commonly run on data from the network.  By default it
@@ -41,19 +53,7 @@ This follows the same principle as <tt>YAML.safe_load</tt> and
 <tt>JSON.parse(create_additions: false)</tt>: deserializing wire data
 into live objects should be opt-in.
 
-CBOR is an object representation format defined by the IETF[http://ietf.org].
-The specification[http://tools.ietf.org/html/rfc8949]
-is an IETF Standards-Track specification
-and has been published as RFC 8949 (superseding the older RFC 7049).
-
-This is all based on wonderful work by frsyuki, and I have no idea how
-to acknowledge him appropriately.  This gem is not intended to fork or
-supersede MessagePack[http://msgpack.org], which has a vibrant
-ecosystem.  It is just making use of the high-quality code that is
-available in this community.  If MessagePack works for you, go for it.
-If you need CBOR, you need this.
-
-Todos:
+== Todos:
 
 * This code has not yet been fully optimized, so it is still a few
   percent slower than msgpack-ruby.
@@ -63,7 +63,7 @@ Todos:
   get some documentation in the directory +doc+ (see +index.html+ there).
 
 * Cover more rubies.
-  * \[✔✔✔✔] tested on MRI (1.9.3, 2.0.0, 2.1.10, 2.2.10, 2.3.7, 2.4.4 and 2.5.1).
+  * \[✔✔✔✔] tested on MRI (1.9.3, 2.0.0, 2.1.10, 2.2.10, 2.3.7, 2.4.4 and 2.5.1, up to 4.1.0-preview1).
   * (\[✔] There now also is some basic MRI 1.8.7 compatibility, however 1.8.7 does not support differentiation between byte and text strings.)
   * \[✔] tested on Rubinius 2.4.1.
   * \[_] Publish the pure-ruby version and make it work the same way on JRuby.

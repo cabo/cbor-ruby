@@ -457,6 +457,8 @@ describe MessagePack do
     check_decode "\xd8\x20\x78\x13http://www.ietf.org", URI.parse("http://www.ietf.org"), reconstruct_from_tags: [CBOR::TAG_URI]
     expect { check_decode "\xd8\x20\x78\x13h``p://www.ietf.org", URI.parse("http://www.ietf.org"), reconstruct_from_tags: [CBOR::TAG_URI] }.to raise_error(URI::InvalidURIError)
     check_decode "\xd8\x20\x78\x13http://www.ietf.org", URI.parse("http://www.ietf.org"), reconstruct_from_tags: {CBOR::TAG_URI => true}
+    check_decode "\xd8\x20\x78\x13http://www.ietf.org", CBOR::Tagged.new(32, "http://www.ietf.org"), reconstruct_from_tags: {4711 => true}
+    check_decode "\xd8\x20\x78\x13http://www.ietf.org", CBOR::Tagged.new(32, "http://www.ietf.org"), reconstruct_from_tags: 4711
   end
 
   it "regexp" do

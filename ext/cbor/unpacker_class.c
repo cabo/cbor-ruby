@@ -104,17 +104,18 @@ static VALUE Unpacker_alloc(VALUE klass)
 }
 
 /* reconstruct_from_tags: a list of CBOR tag numbers whose decoded value should be
-   reconstructed into a live Ruby object.  Only the object-constructing tags
+   reconstructed into a live Ruby object.  Examined with #include? .
+   Only the object-constructing tags
    are gated (35 -> Regexp, 32 -> URI); anything else decodes to CBOR::Tagged.
-   Absent or non-Array means "none", the safe default. */
+   Absent or not responding to include? means "none", the safe default. */
 static void set_reconstruct_from_tags(msgpack_unpacker_t* uk, VALUE options)
 {
     VALUE tags;
     if (!RB_TYPE_P(options, T_HASH))
         return;
     tags = rb_hash_aref(options, ID2SYM(rb_intern("reconstruct_from_tags")));
-    if (RB_TYPE_P(tags, T_ARRAY)) {
-        ID include_p = rb_intern("include?");
+    ID include_p = rb_intern("include?");
+    if (rb_respond_to(tags, include_p)) {
         uk->reconstruct_regexp = RTEST(rb_funcall(tags, include_p, 1, INT2FIX(TAG_RE)));
         uk->reconstruct_uri    = RTEST(rb_funcall(tags, include_p, 1, INT2FIX(TAG_URI)));
     }
